@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "./db/Query"
+    schema: "./db/migrate"
+    gen:
+      go:
+        package: "db"
+        out: "./db/Result"
+        emit_json_tags: true
