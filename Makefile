@@ -13,4 +13,7 @@ MigrateUp:
 MigrateDown:
 	migrate -path db/migrate -database "postgres://root:MummyJi@localhost:5431/PapaJi?sslmode=disable" -verbose down
 
-.PHONY:	Container	CreateDB	DropDB	MigrateUp	MigrateDown
+Sqlc:
+	sqlc generate
+
+.PHONY:	Container	CreateDB	DropDB	MigrateUp	MigrateDown	Sqlc
