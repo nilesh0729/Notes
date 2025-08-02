@@ -8,10 +8,10 @@ import (
 	"database/sql"
 )
 
-// Stores notes created by users
+// All notes — can belong to a user or be anonymous (free mode)
 type Note struct {
 	ID        int32          `json:"id"`
-	UserID    int32          `json:"user_id"`
+	UserID    sql.NullInt32  `json:"user_id"`
 	Title     sql.NullString `json:"title"`
 	Content   sql.NullString `json:"content"`
 	Pinned    sql.NullBool   `json:"pinned"`
@@ -26,14 +26,14 @@ type NoteTag struct {
 	TagID  int32 `json:"tag_id"`
 }
 
-// Stores tags for categorizing notes
+// Tags to organize notes — private to each user
 type Tag struct {
 	ID     int32  `json:"id"`
 	UserID int32  `json:"user_id"`
 	Name   string `json:"name"`
 }
 
-// stores user accounts
+// Registered users for login/registration
 type User struct {
 	ID           int32        `json:"id"`
 	Username     string       `json:"username"`

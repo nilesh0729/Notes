@@ -38,3 +38,91 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	)
 	return i, err
 }
+
+const deleteUsers = `-- name: DeleteUsers :exec
+DELETE FROM users
+WHERE id = $1
+`
+
+func (q *Queries) DeleteUsers(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteUsers, id)
+	return err
+}
+
+const getUsers = `-- name: GetUsers :one
+SELECT id, username, email, password_hash, created_at FROM users
+WHERE id = $1 
+LIMIT 1
+`
+
+func (q *Queries) GetUsers(ctx context.Context, id int32) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUsers, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.PasswordHash,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const listUsers = `-- name: ListUsers :many
+SELECT id, username, email, password_hash, created_at FROM users
+ORDER BY id
+LIMIT $1
+OFFSET $2
+`
+
+type ListUsersParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, listUsers, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Email,
+			&i.PasswordHash,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateUsers = `-- name: UpdateUsers :exec
+UPDATE users
+  set password_hash = $2,
+  email = $3
+WHERE id = $1
+`
+
+type UpdateUsersParams struct {
+	ID           int32  `json:"id"`
+	PasswordHash string `json:"password_hash"`
+	Email        string `json:"email"`
+}
+
+func (q *Queries) UpdateUsers(ctx context.Context, arg UpdateUsersParams) error {
+	_, err := q.db.ExecContext(ctx, updateUsers, arg.ID, arg.PasswordHash, arg.Email)
+	return err
+}
