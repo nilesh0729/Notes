@@ -22,11 +22,12 @@ LIMIT $1
 OFFSET $2;
 
 
--- name: UpdateUsers :exec
+-- name: UpdateUsers :one
 UPDATE users
   set password_hash = $2,
   email = $3
-WHERE id = $1;
+WHERE id = $1
+RETURNING *;
 
 
 -- name: DeleteUsers :exec
