@@ -63,14 +63,13 @@ func (q *Queries) DeleteNotes(ctx context.Context, id int32) error {
 	return err
 }
 
-const getNotes = `-- name: GetNotes :one
+const getNoteById = `-- name: GetNoteById :one
 SELECT id, user_id, title, content, pinned, archived, created_at, updated_at FROM notes
-WHERE id = $1 
-LIMIT 1
+WHERE id = $1
 `
 
-func (q *Queries) GetNotes(ctx context.Context, id int32) (Note, error) {
-	row := q.db.QueryRowContext(ctx, getNotes, id)
+func (q *Queries) GetNoteById(ctx context.Context, id int32) (Note, error) {
+	row := q.db.QueryRowContext(ctx, getNoteById, id)
 	var i Note
 	err := row.Scan(
 		&i.ID,
@@ -85,14 +84,14 @@ func (q *Queries) GetNotes(ctx context.Context, id int32) (Note, error) {
 	return i, err
 }
 
-const listNotes = `-- name: ListNotes :many
+const listUserNotes = `-- name: ListUserNotes :many
 SELECT id, user_id, title, content, pinned, archived, created_at, updated_at FROM notes
 WHERE user_id = $1 AND archived = FALSE 
 ORDER BY created_at DESC
 `
 
-func (q *Queries) ListNotes(ctx context.Context, userID sql.NullInt32) ([]Note, error) {
-	rows, err := q.db.QueryContext(ctx, listNotes, userID)
+func (q *Queries) ListUserNotes(ctx context.Context, userID sql.NullInt32) ([]Note, error) {
+	rows, err := q.db.QueryContext(ctx, listUserNotes, userID)
 	if err != nil {
 		return nil, err
 	}

@@ -9,10 +9,11 @@ import (
 	"context"
 )
 
-const addTagToNote = `-- name: AddTagToNote :exec
+const addTagToNote = `-- name: AddTagToNote :one
 INSERT INTO note_tags (note_id, tag_id)
 VALUES ($1, $2)
 ON CONFLICT DO NOTHING
+RETURNING note_id, tag_id
 `
 
 type AddTagToNoteParams struct {
@@ -20,9 +21,11 @@ type AddTagToNoteParams struct {
 	TagID  int32 `json:"tag_id"`
 }
 
-func (q *Queries) AddTagToNote(ctx context.Context, arg AddTagToNoteParams) error {
-	_, err := q.db.ExecContext(ctx, addTagToNote, arg.NoteID, arg.TagID)
-	return err
+func (q *Queries) AddTagToNote(ctx context.Context, arg AddTagToNoteParams) (NoteTag, error) {
+	row := q.db.QueryRowContext(ctx, addTagToNote, arg.NoteID, arg.TagID)
+	var i NoteTag
+	err := row.Scan(&i.NoteID, &i.TagID)
+	return i, err
 }
 
 const deleteNoteTags = `-- name: DeleteNoteTags :exec
