@@ -1,7 +1,9 @@
--- name: AddTagToNote :exec
+-- name: AddTagToNote :one
 INSERT INTO note_tags (note_id, tag_id)
 VALUES ($1, $2)
-ON CONFLICT DO NOTHING;
+ON CONFLICT DO NOTHING
+RETURNING *;
+
 
 -- name: RemoveTagFromNote :exec
 DELETE FROM note_tags

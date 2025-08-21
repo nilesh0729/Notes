@@ -10,12 +10,11 @@ INSERT INTO notes (
 )
 RETURNING *;
 
--- name: GetNotes :one
+-- name: GetNoteById :one
 SELECT * FROM notes
-WHERE id = $1 
-LIMIT 1;
+WHERE id = $1;
 
--- name: ListNotes :many
+-- name: ListUserNotes :many
 SELECT * FROM notes
 WHERE user_id = $1 AND archived = FALSE 
 ORDER BY created_at DESC;
