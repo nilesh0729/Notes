@@ -35,7 +35,7 @@ jobs:
           --health-retries 5
         # post
         ports: 
-          - 5433:5431
+          - 5431:5432
         
     steps:
 
@@ -45,7 +45,7 @@ jobs:
         go-version: '1.24.4'
 
     - name: Checkout the go code in the module Directory
-      uses: actions/Checkout@v4
+      uses: actions/checkout@v4
     
     - name: Install golang-migrate 
       run: |
