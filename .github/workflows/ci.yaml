@@ -34,7 +34,7 @@ jobs:
           --health-retries 5
         ports:
           # Map the container port 5432 to the host runner's port 5432
-          - 5432:5432
+          - 5431:5432
 
     steps:
     - name: Set up Go
