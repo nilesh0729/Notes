@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS "note_tags";
+DROP TABLE IF EXISTS "tags";
+DROP TABLE IF EXISTS "notes";
