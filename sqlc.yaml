@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "./db/queries"
+    schema: "./db/migrate_files"
+    gen:
+      go:
+        package: "Database"
+        out: "./db/Result"
+        emit_json_tags: true
+        emit_empty_slices: true
+        emit_interface: true
+        
