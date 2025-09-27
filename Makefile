@@ -8,10 +8,10 @@ Dropdb:
 	docker exec -it ganu dropdb -U root PapaJi
 
 MigrateUp:
-	migrate -path db/migrate_files -database "postgres://root:MummyJi@localhost:5431/PapaJi?sslmode=disable" -verbose up
+	migrate -path db/migrate_files -database "postgres://root:MummyJi@127.0.0.1:5431/PapaJi?sslmode=disable" -verbose up
 
 MigrateDown:
-	migrate -path db/migrate_files -database "postgres://root:MummyJi@localhost:5431/PapaJi?sslmode=disable" -verbose down
+	migrate -path db/migrate_files -database "postgres://root:MummyJi@127.0.0.1:5431/PapaJi?sslmode=disable" -verbose down
 
 Sqlc:
 	sqlc generate
