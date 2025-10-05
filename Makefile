@@ -1,3 +1,5 @@
+DB_URL=postgres://root:MummyJi@127.0.0.1:5431/PapaJi?sslmode=disable
+
 Container:
 	docker run --name ganu -p 5431:5432 -e POSTGRES_PASSWORD=MummyJi -e POSTGRES_USER=root -d postgres
 
@@ -8,10 +10,10 @@ Dropdb:
 	docker exec -it ganu dropdb -U root PapaJi
 
 MigrateUp:
-	migrate -path db/migrate_files -database "postgres://root:MummyJi@127.0.0.1:5431/PapaJi?sslmode=disable" -verbose up
+	migrate -path db/migrate_files -database "$(DB_URL)" -verbose up
 
 MigrateDown:
-	migrate -path db/migrate_files -database "postgres://root:MummyJi@127.0.0.1:5431/PapaJi?sslmode=disable" -verbose down
+	migrate -path db/migrate_files -database "$(DB_URL)" -verbose down
 
 Sqlc:
 	sqlc generate
@@ -19,4 +21,7 @@ Sqlc:
 Test:
 	go test -v -cover ./...
 
-.PHONY:	Container	Createdb	Dropdb	MigrateDown	MigrateUp	Sqlc
+Server:
+	go run main.go
+
+.PHONY:	Container	Createdb	Dropdb	MigrateDown	MigrateUp	Sqlc	Server
