@@ -29,7 +29,7 @@ func (server *Server) CreateTags(ctx *gin.Context) {
 }
 
 type GetTagRequest struct {
-	TagId int32 `uri:"tag_id" binding:"required"`
+	TagId int32 `uri:"id" binding:"required,min=1"`
 }
 
 func (server *Server) GetTag(ctx *gin.Context) {
@@ -52,7 +52,7 @@ func (server *Server) GetTag(ctx *gin.Context) {
 
 type ListTagsRequest struct {
 	TagId    int32 `form:"tag_id" binding:"required,min=1"`
-	PageSize int32 `form:"PageSize" binding:"required,min=5,max=20"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=20"`
 }
 
 func (server *Server) ListTags(ctx *gin.Context) {

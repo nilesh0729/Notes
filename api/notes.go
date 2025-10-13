@@ -13,6 +13,8 @@ type ResponseFormat struct {
 	NoteId    int32     `json:"note_id"`
 	Title     string    `json:"title"`
 	Content   string    `json:"content"`
+	Pinned    bool      `json:"pinned"`
+	Archived  bool      `json:"archived"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -22,8 +24,10 @@ func ResponseFormating(note Database.Note) ResponseFormat {
 		NoteId:    note.NoteID,
 		Title:     note.Title.String,
 		Content:   note.Content.String,
+		Pinned:    note.Pinned.Bool,
+		Archived:  note.Archived.Bool,
 		CreatedAt: note.CreatedAt.Time,
-		UpdatedAt: note.CreatedAt.Time,
+		UpdatedAt: note.UpdatedAt.Time,
 	}
 }
 
@@ -79,6 +83,10 @@ func (server *Server) GetNoteById(ctx *gin.Context) {
 
 	note, err := server.store.GetNoteById(ctx, (req.NoteID))
 	if err != nil {
+		if err == sql.ErrNoRows{
+			ctx.JSON(http.StatusNotFound, errResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errResponse(err))
 		return
 	}
@@ -88,7 +96,7 @@ func (server *Server) GetNoteById(ctx *gin.Context) {
 }
 
 type ListNotesRequest struct {
-	cursor   int32 `form:"cursor" binding:"required,min=0"`
+	Cursor   int32 `form:"cursor" binding:"required,min=0"`
 	PageSize int32 `form:"page_size" binding:"required,max=20,min=5"`
 }
 
@@ -102,7 +110,7 @@ func (server *Server) ListNotes(ctx *gin.Context) {
 	}
 
 	arg := Database.ListNotesParams{
-		NoteID: req.cursor,
+		NoteID: req.Cursor,
 		Limit:  req.PageSize,
 	}
 	notes, err := server.store.ListNotes(ctx, arg)
