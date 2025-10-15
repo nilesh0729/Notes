@@ -1,14 +1,38 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	Database "github.com/nilesh0729/Notes/db/Result"
 )
+type TagResponseFormat struct{
+	TagId int32 `json:"tag_id"`
+	Name string `json:"name"`
+}
+
+func TagResponse(tag Database.Tag)TagResponseFormat{
+	return TagResponseFormat{
+		TagId: tag.TagID,
+		Name: tag.Name,
+	}
+}
+
+func formatManytags(tags []Database.Tag) []TagResponseFormat {
+
+	var formattedtags []TagResponseFormat
+
+	for _, tag := range tags {
+		formattedtags = append(formattedtags, TagResponse(tag))
+	}
+
+	return formattedtags
+}
 
 type CreateTagsRequest struct {
-	Name string `json:"name" binding:"required"`
+	Owner string `json:"owner" binding:"required"`
+	Name  string `json:"name" binding:"required"`
 }
 
 func (server *Server) CreateTags(ctx *gin.Context) {
@@ -18,14 +42,18 @@ func (server *Server) CreateTags(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errResponse(err))
 		return
 	}
+	arg := Database.CreateTagsParams{
+		Owner: sql.NullString{String: req.Owner, Valid: true},
+		Name: req.Name,
+	}
 
-	tag, err := server.store.CreateTags(ctx, req.Name)
+	tag, err := server.store.CreateTags(ctx,arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, tag)
+	ctx.JSON(http.StatusOK, TagResponse(tag))
 }
 
 type GetTagRequest struct {
@@ -66,13 +94,13 @@ func (server *Server) ListTags(ctx *gin.Context) {
 
 	arg := Database.ListTagsParams{
 		TagID: req.TagId,
-		Limit: req.PageSize,		
+		Limit: req.PageSize,
 	}
 	tags, err := server.store.ListTags(ctx, arg)
-	if err != nil{
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, tags)
+	ctx.JSON(http.StatusOK, formatManytags(tags))
 }

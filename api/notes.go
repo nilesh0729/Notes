@@ -43,6 +43,7 @@ func formatManyNotes(notes []Database.Note) []ResponseFormat {
 }
 
 type CreateNoteRequest struct {
+	Owner   string `json:"owner" binding:"required"`
 	Title   string `json:"title" binding:"required"`
 	Content string `json:"content" binding:"required"`
 }
@@ -56,6 +57,7 @@ func (server *Server) CreateNote(ctx *gin.Context) {
 		return
 	}
 	arg := Database.CreateNoteParams{
+		Owner:   sql.NullString{String: req.Owner, Valid: true},
 		Title:   sql.NullString{String: req.Title, Valid: true},
 		Content: sql.NullString{String: req.Content, Valid: true},
 	}
@@ -83,7 +85,7 @@ func (server *Server) GetNoteById(ctx *gin.Context) {
 
 	note, err := server.store.GetNoteById(ctx, (req.NoteID))
 	if err != nil {
-		if err == sql.ErrNoRows{
+		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errResponse(err))
 			return
 		}

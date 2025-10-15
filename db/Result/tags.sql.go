@@ -7,21 +7,28 @@ package Database
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createTags = `-- name: CreateTags :one
 INSERT INTO Tags (
+  owner,
   name
 ) VALUES (
-  $1
+  $1, $2
 )
-RETURNING tag_id, name
+RETURNING tag_id, owner, name
 `
 
-func (q *Queries) CreateTags(ctx context.Context, name string) (Tag, error) {
-	row := q.db.QueryRowContext(ctx, createTags, name)
+type CreateTagsParams struct {
+	Owner sql.NullString `json:"owner"`
+	Name  string         `json:"name"`
+}
+
+func (q *Queries) CreateTags(ctx context.Context, arg CreateTagsParams) (Tag, error) {
+	row := q.db.QueryRowContext(ctx, createTags, arg.Owner, arg.Name)
 	var i Tag
-	err := row.Scan(&i.TagID, &i.Name)
+	err := row.Scan(&i.TagID, &i.Owner, &i.Name)
 	return i, err
 }
 
@@ -36,7 +43,7 @@ func (q *Queries) DeleteTag(ctx context.Context, tagID int32) error {
 }
 
 const getTag = `-- name: GetTag :one
-SELECT tag_id, name FROM tags
+SELECT tag_id, owner, name FROM tags
 WHERE tag_id = $1 
 LIMIT 1
 `
@@ -44,12 +51,12 @@ LIMIT 1
 func (q *Queries) GetTag(ctx context.Context, tagID int32) (Tag, error) {
 	row := q.db.QueryRowContext(ctx, getTag, tagID)
 	var i Tag
-	err := row.Scan(&i.TagID, &i.Name)
+	err := row.Scan(&i.TagID, &i.Owner, &i.Name)
 	return i, err
 }
 
 const listTags = `-- name: ListTags :many
-SELECT tag_id, name FROM tags
+SELECT tag_id, owner, name FROM tags
 WHERE tag_id > $1
 ORDER BY tag_id
 LIMIT $2
@@ -69,7 +76,7 @@ func (q *Queries) ListTags(ctx context.Context, arg ListTagsParams) ([]Tag, erro
 	items := []Tag{}
 	for rows.Next() {
 		var i Tag
-		if err := rows.Scan(&i.TagID, &i.Name); err != nil {
+		if err := rows.Scan(&i.TagID, &i.Owner, &i.Name); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -87,7 +94,7 @@ const updateTag = `-- name: UpdateTag :one
 UPDATE Tags
 SET name = $2
 WHERE tag_id = $1
-RETURNING tag_id, name
+RETURNING tag_id, owner, name
 `
 
 type UpdateTagParams struct {
@@ -98,6 +105,6 @@ type UpdateTagParams struct {
 func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) (Tag, error) {
 	row := q.db.QueryRowContext(ctx, updateTag, arg.TagID, arg.Name)
 	var i Tag
-	err := row.Scan(&i.TagID, &i.Name)
+	err := row.Scan(&i.TagID, &i.Owner, &i.Name)
 	return i, err
 }

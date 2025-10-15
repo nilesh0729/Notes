@@ -1,15 +1,16 @@
 -- name: CreateNote :one
 INSERT INTO notes (
+  owner,
   title,
   content
 ) VALUES (
-  $1, $2
+  $1, $2 ,$3
 )
 RETURNING *;
 
 -- name: GetNoteById :one
 SELECT * FROM notes
-WHERE note_id = $1 
+WHERE note_id = $1
 LIMIT 1;
 
 -- name: ListNotes :many

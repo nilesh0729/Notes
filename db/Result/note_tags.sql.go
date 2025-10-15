@@ -7,6 +7,7 @@ package Database
 
 import (
 	"context"
+	"database/sql"
 )
 
 const addTagToNote = `-- name: AddTagToNote :one
@@ -29,24 +30,36 @@ func (q *Queries) AddTagToNote(ctx context.Context, arg AddTagToNoteParams) (Not
 }
 
 const getNotesForTag = `-- name: GetNotesForTag :many
-SELECT n.note_id, n.title, n.content, n.pinned, n.archived, n.created_at, n.updated_at
+SELECT n.note_id, n.title, n.owner, n.content, n.pinned, n.archived, n.created_at, n.updated_at
 FROM notes n
 INNER JOIN note_tags nt ON n.note_id = nt.note_id
 WHERE nt.tag_id = $1
 `
 
-func (q *Queries) GetNotesForTag(ctx context.Context, tagID int32) ([]Note, error) {
+type GetNotesForTagRow struct {
+	NoteID    int32          `json:"note_id"`
+	Title     sql.NullString `json:"title"`
+	Owner     sql.NullString `json:"owner"`
+	Content   sql.NullString `json:"content"`
+	Pinned    sql.NullBool   `json:"pinned"`
+	Archived  sql.NullBool   `json:"archived"`
+	CreatedAt sql.NullTime   `json:"created_at"`
+	UpdatedAt sql.NullTime   `json:"updated_at"`
+}
+
+func (q *Queries) GetNotesForTag(ctx context.Context, tagID int32) ([]GetNotesForTagRow, error) {
 	rows, err := q.db.QueryContext(ctx, getNotesForTag, tagID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Note{}
+	items := []GetNotesForTagRow{}
 	for rows.Next() {
-		var i Note
+		var i GetNotesForTagRow
 		if err := rows.Scan(
 			&i.NoteID,
 			&i.Title,
+			&i.Owner,
 			&i.Content,
 			&i.Pinned,
 			&i.Archived,
@@ -73,15 +86,20 @@ INNER JOIN note_tags nt ON t.tag_id = nt.tag_id
 WHERE nt.note_id = $1
 `
 
-func (q *Queries) GetTagsForNote(ctx context.Context, noteID int32) ([]Tag, error) {
+type GetTagsForNoteRow struct {
+	TagID int32  `json:"tag_id"`
+	Name  string `json:"name"`
+}
+
+func (q *Queries) GetTagsForNote(ctx context.Context, noteID int32) ([]GetTagsForNoteRow, error) {
 	rows, err := q.db.QueryContext(ctx, getTagsForNote, noteID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Tag{}
+	items := []GetTagsForNoteRow{}
 	for rows.Next() {
-		var i Tag
+		var i GetTagsForNoteRow
 		if err := rows.Scan(&i.TagID, &i.Name); err != nil {
 			return nil, err
 		}

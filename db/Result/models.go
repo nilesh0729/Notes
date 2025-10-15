@@ -11,6 +11,7 @@ import (
 // Stores notes (can be created anonymously for now)
 type Note struct {
 	NoteID    int32          `json:"note_id"`
+	Owner     sql.NullString `json:"owner"`
 	Title     sql.NullString `json:"title"`
 	Content   sql.NullString `json:"content"`
 	Pinned    sql.NullBool   `json:"pinned"`
@@ -26,6 +27,7 @@ type NoteTag struct {
 
 // Stores tags for categorizing notes
 type Tag struct {
-	TagID int32  `json:"tag_id"`
-	Name  string `json:"name"`
+	TagID int32          `json:"tag_id"`
+	Owner sql.NullString `json:"owner"`
+	Name  string         `json:"name"`
 }

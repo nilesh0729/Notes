@@ -11,13 +11,13 @@ import (
 type Querier interface {
 	AddTagToNote(ctx context.Context, arg AddTagToNoteParams) (NoteTag, error)
 	CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error)
-	CreateTags(ctx context.Context, name string) (Tag, error)
+	CreateTags(ctx context.Context, arg CreateTagsParams) (Tag, error)
 	DeleteNote(ctx context.Context, noteID int32) error
 	DeleteTag(ctx context.Context, tagID int32) error
 	GetNoteById(ctx context.Context, noteID int32) (Note, error)
-	GetNotesForTag(ctx context.Context, tagID int32) ([]Note, error)
+	GetNotesForTag(ctx context.Context, tagID int32) ([]GetNotesForTagRow, error)
 	GetTag(ctx context.Context, tagID int32) (Tag, error)
-	GetTagsForNote(ctx context.Context, noteID int32) ([]Tag, error)
+	GetTagsForNote(ctx context.Context, noteID int32) ([]GetTagsForNoteRow, error)
 	ListNotes(ctx context.Context, arg ListNotesParams) ([]Note, error)
 	ListTags(ctx context.Context, arg ListTagsParams) ([]Tag, error)
 	RemoveTagFromNote(ctx context.Context, arg RemoveTagFromNoteParams) error

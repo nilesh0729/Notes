@@ -1,8 +1,9 @@
 -- name: CreateTags :one
 INSERT INTO Tags (
+  owner,
   name
 ) VALUES (
-  $1
+  $1, $2
 )
 RETURNING *;
 

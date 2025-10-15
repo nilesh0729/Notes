@@ -66,7 +66,7 @@ func (mr *MockStoreMockRecorder) CreateNote(arg0, arg1 interface{}) *gomock.Call
 }
 
 // CreateTags mocks base method.
-func (m *MockStore) CreateTags(arg0 context.Context, arg1 string) (Database.Tag, error) {
+func (m *MockStore) CreateTags(arg0 context.Context, arg1 Database.CreateTagsParams) (Database.Tag, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateTags", arg0, arg1)
 	ret0, _ := ret[0].(Database.Tag)
@@ -124,10 +124,10 @@ func (mr *MockStoreMockRecorder) GetNoteById(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // GetNotesForTag mocks base method.
-func (m *MockStore) GetNotesForTag(arg0 context.Context, arg1 int32) ([]Database.Note, error) {
+func (m *MockStore) GetNotesForTag(arg0 context.Context, arg1 int32) ([]Database.GetNotesForTagRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNotesForTag", arg0, arg1)
-	ret0, _ := ret[0].([]Database.Note)
+	ret0, _ := ret[0].([]Database.GetNotesForTagRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -154,10 +154,10 @@ func (mr *MockStoreMockRecorder) GetTag(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // GetTagsForNote mocks base method.
-func (m *MockStore) GetTagsForNote(arg0 context.Context, arg1 int32) ([]Database.Tag, error) {
+func (m *MockStore) GetTagsForNote(arg0 context.Context, arg1 int32) ([]Database.GetTagsForNoteRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTagsForNote", arg0, arg1)
-	ret0, _ := ret[0].([]Database.Tag)
+	ret0, _ := ret[0].([]Database.GetTagsForNoteRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

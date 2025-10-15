@@ -10,12 +10,16 @@ import (
 )
 
 func CreateRandomTags(t *testing.T) Tag {
-	name := util.RandomString(6)
-	tag, err := testQueries.CreateTags(context.Background(), name)
+	arg := CreateTagsParams{
+		Owner: sql.NullString{String: util.RandomString(4), Valid: true},
+		Name: util.RandomString(5),
+	}
+	tag, err := testQueries.CreateTags(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, tag)
 
-	require.Equal(t, tag.Name, name)
+	require.Equal(t, tag.Name, arg.Name)
+	require.Equal(t, tag.Owner, arg.Owner)
 	require.NotZero(t, tag.TagID)
 
 	return  tag
@@ -32,8 +36,9 @@ func TestGetTag(t *testing.T){
 	require.NoError(t, err)
 	require.NotEmpty(t, tag)
 	
-	require.Equal(t, tag.TagID, tag.TagID)
-	require.Equal(t, tag.Name, tag.Name)
+	require.Equal(t, tag.Owner, tag1.Owner)
+	require.Equal(t, tag.TagID, tag1.TagID)
+	require.Equal(t, tag.Name, tag1.Name)
 }
 
 func TestListTags(t *testing.T){
@@ -60,6 +65,7 @@ func TestListTags(t *testing.T){
 
 		expected := CreatedTags[i]
 
+		require.Equal(t, expected.Owner, tag.Owner)
 		require.Equal(t, expected.Name, tag.Name)
 		require.Equal(t, expected.TagID, tag.TagID)
 	}
@@ -76,6 +82,7 @@ func TestUpdateTag(t *testing.T){
 	require.NoError(t, err)
 	require.NotEmpty(t, tag2)
 
+	require.Equal(t, tag1.Owner, tag2.Owner)
 	require.Equal(t, tag1.TagID, tag2.TagID)
 	require.Equal(t, tag2.Name, arg.Name)
 }

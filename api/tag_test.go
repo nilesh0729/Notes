@@ -21,6 +21,11 @@ import (
 func TestCreateTag(t *testing.T) {
 	tag := RandomTag()
 
+	arg:= Database.CreateTagsParams{
+		Owner: tag.Owner,
+		Name: tag.Name,
+	}
+
 	testcases := []struct {
 		name          string
 		body          gin.H
@@ -30,11 +35,12 @@ func TestCreateTag(t *testing.T) {
 		{
 			name: "Ok",
 			body: gin.H{
+				"owner": tag.Owner.String,
 				"name": tag.Name,
 			},
 			buildStubs: func(store *MockDB.MockStore) {
 				store.EXPECT().
-					CreateTags(gomock.Any(), gomock.Eq(tag.Name)).
+					CreateTags(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
 					Return(tag, nil)
 			},
@@ -50,7 +56,7 @@ func TestCreateTag(t *testing.T) {
 			},
 			buildStubs: func(store *MockDB.MockStore) {
 				store.EXPECT().
-					CreateTags(gomock.Any(), gomock.Eq(tag.Name)).
+					CreateTags(gomock.Any(), gomock.Eq(arg)).
 					Times(0)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -60,11 +66,12 @@ func TestCreateTag(t *testing.T) {
 		{
 			name: "InternalServerError",
 			body: gin.H{
+				"owner": tag.Owner.String,
 				"name": tag.Name,
 			},
 			buildStubs: func(store *MockDB.MockStore) {
 				store.EXPECT().
-					CreateTags(gomock.Any(), gomock.Eq(tag.Name)).
+					CreateTags(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
 					Return(Database.Tag{}, sql.ErrConnDone)
 			},
@@ -282,27 +289,32 @@ func TagResponseMatching(t *testing.T, body *bytes.Buffer, tag Database.Tag) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var GotTag Database.Tag
+	var GotTag TagResponseFormat
 
 	err = json.Unmarshal(data, &GotTag)
+	require.NoError(t, err)
 
-	require.Equal(t, tag, GotTag)
+	expected := TagResponse(tag)
+	require.Equal(t, expected, GotTag)
 }
 func TagsResponseMatching(t *testing.T, body *bytes.Buffer, tags []Database.Tag) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var GotTags []Database.Tag
+	var GotTags []TagResponseFormat
 
 	err = json.Unmarshal(data, &GotTags)
 	require.NoError(t, err)
 
-	require.Equal(t, GotTags, tags)
+	expectedFormatted := formatManytags(tags)
+
+	require.Equal(t, GotTags, expectedFormatted)
 }
 
 func RandomTag() Database.Tag {
 	return Database.Tag{
 		TagID: int32(util.RandomInt(1, 10)),
+		Owner: sql.NullString{String: util.RandomString(5), Valid: true},
 		Name:  util.RandomString(4),
 	}
 }

@@ -12,24 +12,27 @@ import (
 
 const createNote = `-- name: CreateNote :one
 INSERT INTO notes (
+  owner,
   title,
   content
 ) VALUES (
-  $1, $2
+  $1, $2 ,$3
 )
-RETURNING note_id, title, content, pinned, archived, created_at, updated_at
+RETURNING note_id, owner, title, content, pinned, archived, created_at, updated_at
 `
 
 type CreateNoteParams struct {
+	Owner   sql.NullString `json:"owner"`
 	Title   sql.NullString `json:"title"`
 	Content sql.NullString `json:"content"`
 }
 
 func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error) {
-	row := q.db.QueryRowContext(ctx, createNote, arg.Title, arg.Content)
+	row := q.db.QueryRowContext(ctx, createNote, arg.Owner, arg.Title, arg.Content)
 	var i Note
 	err := row.Scan(
 		&i.NoteID,
+		&i.Owner,
 		&i.Title,
 		&i.Content,
 		&i.Pinned,
@@ -51,8 +54,8 @@ func (q *Queries) DeleteNote(ctx context.Context, noteID int32) error {
 }
 
 const getNoteById = `-- name: GetNoteById :one
-SELECT note_id, title, content, pinned, archived, created_at, updated_at FROM notes
-WHERE note_id = $1 
+SELECT note_id, owner, title, content, pinned, archived, created_at, updated_at FROM notes
+WHERE note_id = $1
 LIMIT 1
 `
 
@@ -61,6 +64,7 @@ func (q *Queries) GetNoteById(ctx context.Context, noteID int32) (Note, error) {
 	var i Note
 	err := row.Scan(
 		&i.NoteID,
+		&i.Owner,
 		&i.Title,
 		&i.Content,
 		&i.Pinned,
@@ -72,7 +76,7 @@ func (q *Queries) GetNoteById(ctx context.Context, noteID int32) (Note, error) {
 }
 
 const listNotes = `-- name: ListNotes :many
-SELECT note_id, title, content, pinned, archived, created_at, updated_at FROM notes
+SELECT note_id, owner, title, content, pinned, archived, created_at, updated_at FROM notes
 WHERE note_id > $1
 ORDER BY note_id 
 LIMIT $2
@@ -94,6 +98,7 @@ func (q *Queries) ListNotes(ctx context.Context, arg ListNotesParams) ([]Note, e
 		var i Note
 		if err := rows.Scan(
 			&i.NoteID,
+			&i.Owner,
 			&i.Title,
 			&i.Content,
 			&i.Pinned,
@@ -119,7 +124,7 @@ UPDATE notes
   set title = $2,
   content = $3
 WHERE note_id = $1
-RETURNING note_id, title, content, pinned, archived, created_at, updated_at
+RETURNING note_id, owner, title, content, pinned, archived, created_at, updated_at
 `
 
 type UpdateNoteParams struct {
@@ -133,6 +138,7 @@ func (q *Queries) UpdateNote(ctx context.Context, arg UpdateNoteParams) (Note, e
 	var i Note
 	err := row.Scan(
 		&i.NoteID,
+		&i.Owner,
 		&i.Title,
 		&i.Content,
 		&i.Pinned,

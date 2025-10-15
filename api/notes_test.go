@@ -21,6 +21,7 @@ import (
 func TestCreateNoteApi(t *testing.T) {
 	note := RandomNotes()
 	arg := Database.CreateNoteParams{
+		Owner:   note.Owner,
 		Title:   note.Title,
 		Content: note.Content,
 	}
@@ -34,6 +35,7 @@ func TestCreateNoteApi(t *testing.T) {
 		{
 			name: "OK",
 			body: gin.H{
+				"owner": note.Owner.String,
 				"title":   note.Title.String,
 				"content": note.Content.String,
 			},
@@ -66,6 +68,7 @@ func TestCreateNoteApi(t *testing.T) {
 		{
 			name: "InternalServerError",
 			body: gin.H{
+				"owner": note.Owner.String,
 				"title":   note.Title.String,
 				"content": note.Content.String,
 			},
@@ -241,16 +244,16 @@ func TestListNotes(t *testing.T) {
 		{
 			name: "BadRequest",
 			query: Query{
-				cursor: 0,
+				cursor:    0,
 				page_size: 3,
 			},
 			buildStubs: func(store *MockDB.MockStore, query Query) {
 				arg := Database.ListNotesParams{
 					NoteID: query.cursor,
-					Limit: query.page_size,
+					Limit:  query.page_size,
 				}
 				store.EXPECT().
-				    ListNotes(gomock.Any(), gomock.Eq(arg)).
+					ListNotes(gomock.Any(), gomock.Eq(arg)).
 					Times(0)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -261,16 +264,16 @@ func TestListNotes(t *testing.T) {
 		{
 			name: "InternalServerError",
 			query: Query{
-				cursor: 1,
+				cursor:    1,
 				page_size: int32(n),
 			},
 			buildStubs: func(store *MockDB.MockStore, query Query) {
 				arg := Database.ListNotesParams{
 					NoteID: query.cursor,
-					Limit: query.page_size,
+					Limit:  query.page_size,
 				}
 				store.EXPECT().
-				    ListNotes(gomock.Any(), gomock.Eq(arg)).
+					ListNotes(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
 					Return([]Database.Note{}, sql.ErrConnDone)
 			},
@@ -294,7 +297,7 @@ func TestListNotes(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/notes?cursor=%d&page_size=%d", tc.query.cursor, tc.query.page_size)
-			
+
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
@@ -307,6 +310,7 @@ func TestListNotes(t *testing.T) {
 func RandomNotes() Database.Note {
 	return Database.Note{
 		NoteID:   int32(util.RandomInt(1, 100)),
+		Owner:    sql.NullString{String: util.RandomString(5), Valid: true},
 		Title:    sql.NullString{String: util.RandomString(5), Valid: true},
 		Content:  sql.NullString{String: util.RandomString(8), Valid: true},
 		Pinned:   sql.NullBool{Bool: false, Valid: true},
@@ -321,20 +325,21 @@ func NoteBodyMatching(t *testing.T, body *bytes.Buffer, note Database.Note) {
 	var GotNote ResponseFormat
 
 	err = json.Unmarshal(data, &GotNote)
+	require.NoError(t, err)
 
 	expected := ResponseFormating(note)
 	require.Equal(t, expected, GotNote)
 }
 
 func NotesBodyMatching(t *testing.T, body *bytes.Buffer, expected []Database.Note) {
-    data, err := io.ReadAll(body)
-    require.NoError(t, err)
-    
-    expectedFormatted := formatManyNotes(expected)
- 
-    var gotFormatted []ResponseFormat
-    err = json.Unmarshal(data, &gotFormatted)
-    require.NoError(t, err)
+	data, err := io.ReadAll(body)
+	require.NoError(t, err)
 
-    require.Equal(t, expectedFormatted, gotFormatted)
+	expectedFormatted := formatManyNotes(expected)
+
+	var gotFormatted []ResponseFormat
+	err = json.Unmarshal(data, &gotFormatted)
+	require.NoError(t, err)
+
+	require.Equal(t, expectedFormatted, gotFormatted)
 }

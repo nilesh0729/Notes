@@ -36,4 +36,3 @@ func (server *Server) AddTagToNote(ctx *gin.Context) {
 
 }
 
-
