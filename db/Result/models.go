@@ -31,3 +31,9 @@ type Tag struct {
 	Owner sql.NullString `json:"owner"`
 	Name  string         `json:"name"`
 }
+
+type User struct {
+	Username       string `json:"username"`
+	HashedPassword string `json:"hashed_password"`
+	Email          string `json:"email"`
+}
