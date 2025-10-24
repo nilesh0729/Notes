@@ -32,10 +32,7 @@ func TestAddTagToNote(t *testing.T) {
 				"tag_id":  notetag.TagID,
 			},
 			buildstubs: func(store *mockDB.MockStore) {
-				arg := Database.AddTagToNoteParams{
-					NoteID: notetag.NoteID,
-					TagID:  notetag.TagID,
-				}
+				arg := Database.AddTagToNoteParams(notetag)
 				store.EXPECT().
 					AddTagToNote(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
@@ -52,10 +49,7 @@ func TestAddTagToNote(t *testing.T) {
 				"tag_id": notetag.TagID,
 			},
 			buildstubs: func(store *mockDB.MockStore) {
-				arg := Database.AddTagToNoteParams{
-					NoteID: notetag.NoteID,
-					TagID:  notetag.TagID,
-				}
+				arg := Database.AddTagToNoteParams(notetag)
 				store.EXPECT().
 					AddTagToNote(gomock.Any(), gomock.Eq(arg)).
 					Times(0)
@@ -72,10 +66,7 @@ func TestAddTagToNote(t *testing.T) {
 				"tag_id":  notetag.TagID,
 			},
 			buildstubs: func(store *mockDB.MockStore) {
-				arg := Database.AddTagToNoteParams{
-					NoteID: notetag.NoteID,
-					TagID:  notetag.TagID,
-				}
+				arg := Database.AddTagToNoteParams(notetag)
 				store.EXPECT().
 					AddTagToNote(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
