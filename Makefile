@@ -21,6 +21,9 @@ Sqlc:
 Test:
 	go test -v -cover ./...
 
+Mock:
+	mockgen -package mockDB -destination db/Mock/gomock.go github.com/nilesh0729/Notes/db/Result Store
+
 Server:
 	go run main.go
 
