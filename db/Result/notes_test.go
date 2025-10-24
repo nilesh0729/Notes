@@ -11,8 +11,9 @@ import (
 )
 
 func CreateRandomNote(t *testing.T) Note {
+	user := RandomUser(t)
 	arg := CreateNoteParams{
-		Owner:   sql.NullString{String: util.RandomString(4), Valid: true},
+		Owner:   sql.NullString{String:user.Username , Valid: true},
 		Title:   sql.NullString{String: util.RandomString(6), Valid: true},
 		Content: sql.NullString{String: util.RandomString(8), Valid: true},
 	}

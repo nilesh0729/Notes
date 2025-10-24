@@ -10,8 +10,9 @@ import (
 )
 
 func CreateRandomTags(t *testing.T) Tag {
+	user := RandomUser(t)
 	arg := CreateTagsParams{
-		Owner: sql.NullString{String: util.RandomString(4), Valid: true},
+		Owner: sql.NullString{String: user.Username, Valid: true},
 		Name: util.RandomString(5),
 	}
 	tag, err := testQueries.CreateTags(context.Background(), arg)
