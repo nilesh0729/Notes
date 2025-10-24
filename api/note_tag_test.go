@@ -12,7 +12,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	Database "github.com/nilesh0729/Notes/db/Result"
-	MockDB "github.com/nilesh0729/Notes/db/mock"
+	mockDB "github.com/nilesh0729/Notes/db/Mock"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,28 +22,28 @@ func TestAddTagToNote(t *testing.T) {
 	testcase := []struct {
 		name          string
 		body          gin.H
-		buildstubs    func(store *MockDB.MockStore)
+		buildstubs    func(store *mockDB.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
 			body: gin.H{
 				"note_id": notetag.NoteID,
-				"tag_id": notetag.TagID,
+				"tag_id":  notetag.TagID,
 			},
-			buildstubs: func(store *MockDB.MockStore) {
+			buildstubs: func(store *mockDB.MockStore) {
 				arg := Database.AddTagToNoteParams{
 					NoteID: notetag.NoteID,
-					TagID: notetag.TagID,
+					TagID:  notetag.TagID,
 				}
 				store.EXPECT().
-				    AddTagToNote(gomock.Any(), gomock.Eq(arg)).
-				    Times(1).
-				    Return(notetag, nil)
+					AddTagToNote(gomock.Any(), gomock.Eq(arg)).
+					Times(1).
+					Return(notetag, nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
-				BodyMatching(t,recorder.Body, notetag)
+				BodyMatching(t, recorder.Body, notetag)
 			},
 		},
 		{
@@ -50,13 +51,13 @@ func TestAddTagToNote(t *testing.T) {
 			body: gin.H{
 				"tag_id": notetag.TagID,
 			},
-			buildstubs: func(store *MockDB.MockStore) {
-				arg:= Database.AddTagToNoteParams{
+			buildstubs: func(store *mockDB.MockStore) {
+				arg := Database.AddTagToNoteParams{
 					NoteID: notetag.NoteID,
-					TagID: notetag.TagID,
+					TagID:  notetag.TagID,
 				}
 				store.EXPECT().
-				    AddTagToNote(gomock.Any(), gomock.Eq(arg)).
+					AddTagToNote(gomock.Any(), gomock.Eq(arg)).
 					Times(0)
 
 			},
@@ -68,15 +69,15 @@ func TestAddTagToNote(t *testing.T) {
 			name: "InternalServerError",
 			body: gin.H{
 				"note_id": notetag.NoteID,
-				"tag_id": notetag.TagID,
+				"tag_id":  notetag.TagID,
 			},
-			buildstubs: func(store *MockDB.MockStore) {
+			buildstubs: func(store *mockDB.MockStore) {
 				arg := Database.AddTagToNoteParams{
 					NoteID: notetag.NoteID,
-					TagID: notetag.TagID,
+					TagID:  notetag.TagID,
 				}
 				store.EXPECT().
-				    AddTagToNote(gomock.Any(), gomock.Eq(arg)).
+					AddTagToNote(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
 					Return(Database.NoteTag{}, sql.ErrConnDone)
 			},
@@ -91,7 +92,7 @@ func TestAddTagToNote(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			store := MockDB.NewMockStore(ctrl)
+			store := mockDB.NewMockStore(ctrl)
 			tc.buildstubs(store)
 
 			server := NewServer(store)
@@ -112,18 +113,18 @@ func TestAddTagToNote(t *testing.T) {
 	}
 }
 
-func RandomNoteTag()Database.NoteTag{
+func RandomNoteTag() Database.NoteTag {
 	note := RandomNotes()
 	tag := RandomTag()
 
 	return Database.NoteTag{
 		NoteID: note.NoteID,
-		TagID: tag.TagID,
+		TagID:  tag.TagID,
 	}
-	
+
 }
 
-func BodyMatching(t *testing.T, body *bytes.Buffer, notetag Database.NoteTag){
+func BodyMatching(t *testing.T, body *bytes.Buffer, notetag Database.NoteTag) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 

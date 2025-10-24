@@ -12,8 +12,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
+	mockDB "github.com/nilesh0729/Notes/db/Mock"
 	Database "github.com/nilesh0729/Notes/db/Result"
-	MockDB "github.com/nilesh0729/Notes/db/mock"
+
 	"github.com/nilesh0729/Notes/util"
 	"github.com/stretchr/testify/require"
 )
@@ -29,17 +30,17 @@ func TestCreateNoteApi(t *testing.T) {
 	testcases := []struct {
 		name          string
 		body          gin.H
-		buildStubs    func(store *MockDB.MockStore)
+		buildStubs    func(store *mockDB.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
 			body: gin.H{
-				"owner": note.Owner.String,
+				"owner":   note.Owner.String,
 				"title":   note.Title.String,
 				"content": note.Content.String,
 			},
-			buildStubs: func(store *MockDB.MockStore) {
+			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					CreateNote(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
@@ -56,7 +57,7 @@ func TestCreateNoteApi(t *testing.T) {
 				"title":   note.Title,
 				"content": note.Content.String,
 			},
-			buildStubs: func(store *MockDB.MockStore) {
+			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					CreateNote(gomock.Any(), gomock.Eq(arg)).
 					Times(0)
@@ -68,11 +69,11 @@ func TestCreateNoteApi(t *testing.T) {
 		{
 			name: "InternalServerError",
 			body: gin.H{
-				"owner": note.Owner.String,
+				"owner":   note.Owner.String,
 				"title":   note.Title.String,
 				"content": note.Content.String,
 			},
-			buildStubs: func(store *MockDB.MockStore) {
+			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					CreateNote(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
@@ -92,7 +93,7 @@ func TestCreateNoteApi(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			store := MockDB.NewMockStore(ctrl)
+			store := mockDB.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
 			server := NewServer(store)
@@ -120,13 +121,13 @@ func TestGetNotesApi(t *testing.T) {
 	testcases := []struct {
 		name          string
 		noteId        int32
-		buildStubs    func(store *MockDB.MockStore)
+		buildStubs    func(store *mockDB.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:   "OK",
 			noteId: note.NoteID,
-			buildStubs: func(store *MockDB.MockStore) {
+			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					GetNoteById(gomock.Any(), gomock.Eq(note.NoteID)).
 					Times(1).
@@ -140,7 +141,7 @@ func TestGetNotesApi(t *testing.T) {
 		{
 			name:   "BadRequest",
 			noteId: 0,
-			buildStubs: func(store *MockDB.MockStore) {
+			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					GetNoteById(gomock.Any(), gomock.Eq(note.NoteID)).
 					Times(0)
@@ -152,7 +153,7 @@ func TestGetNotesApi(t *testing.T) {
 		{
 			name:   "NotFound",
 			noteId: note.NoteID,
-			buildStubs: func(store *MockDB.MockStore) {
+			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					GetNoteById(gomock.Any(), gomock.Eq(note.NoteID)).
 					Times(1).
@@ -165,7 +166,7 @@ func TestGetNotesApi(t *testing.T) {
 		{
 			name:   "InternalServerError",
 			noteId: note.NoteID,
-			buildStubs: func(store *MockDB.MockStore) {
+			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					GetNoteById(gomock.Any(), gomock.Eq(note.NoteID)).
 					Times(1).
@@ -185,7 +186,7 @@ func TestGetNotesApi(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			store := MockDB.NewMockStore(ctrl)
+			store := mockDB.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
 			server := NewServer(store)
@@ -216,7 +217,7 @@ func TestListNotes(t *testing.T) {
 	testcases := []struct {
 		name          string
 		query         Query
-		buildStubs    func(store *MockDB.MockStore, query Query)
+		buildStubs    func(store *mockDB.MockStore, query Query)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
@@ -225,7 +226,7 @@ func TestListNotes(t *testing.T) {
 				cursor:    1,
 				page_size: int32(n),
 			},
-			buildStubs: func(store *MockDB.MockStore, query Query) {
+			buildStubs: func(store *mockDB.MockStore, query Query) {
 				arg := Database.ListNotesParams{
 					NoteID: query.cursor,
 					Limit:  query.page_size,
@@ -247,7 +248,7 @@ func TestListNotes(t *testing.T) {
 				cursor:    0,
 				page_size: 3,
 			},
-			buildStubs: func(store *MockDB.MockStore, query Query) {
+			buildStubs: func(store *mockDB.MockStore, query Query) {
 				arg := Database.ListNotesParams{
 					NoteID: query.cursor,
 					Limit:  query.page_size,
@@ -267,7 +268,7 @@ func TestListNotes(t *testing.T) {
 				cursor:    1,
 				page_size: int32(n),
 			},
-			buildStubs: func(store *MockDB.MockStore, query Query) {
+			buildStubs: func(store *mockDB.MockStore, query Query) {
 				arg := Database.ListNotesParams{
 					NoteID: query.cursor,
 					Limit:  query.page_size,
@@ -290,7 +291,7 @@ func TestListNotes(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			store := MockDB.NewMockStore(ctrl)
+			store := mockDB.NewMockStore(ctrl)
 			tc.buildStubs(store, tc.query)
 
 			server := NewServer(store)
