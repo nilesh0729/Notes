@@ -1,0 +1,7 @@
+ALTER TABLE notes
+DROP CONSTRAINT IF EXISTS notes_owner_fkey;
+
+ALTER TABLE tags
+DROP CONSTRAINT IF EXISTS tags_owner_fkey;
+
+DROP TABLE IF EXISTS "user";
