@@ -30,6 +30,10 @@ func NewServer(store Database.Store) *Server{
 
 	router.POST("/note_tags", server.AddTagToNote)
 
+	router.POST("/user", server.CreateUser)
+
+	router.GET("/user/:username", server.Getuser)
+
 	
 	server.router = router
 
