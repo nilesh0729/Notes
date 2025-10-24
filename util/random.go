@@ -1,25 +1,29 @@
 package util
 
 import (
+	"fmt"
 	"math/rand"
 	"strings"
 )
 
 const alphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
-func RandomInt(min,max int64)int64{
-	return (min + rand.Int63n(max - min + 1))
+func RandomInt(min, max int64) int64 {
+	return (min + rand.Int63n(max-min+1))
 }
 
-func RandomString(n int)string{
+func RandomString(n int) string {
 	var sb strings.Builder
 	k := len(alphabets)
 
-	for i:=0; i<n; i++{
-		c:= alphabets[rand.Intn(k)]
+	for i := 0; i < n; i++ {
+		c := alphabets[rand.Intn(k)]
 
 		sb.WriteByte(c)
 	}
-	return  sb.String()
+	return sb.String()
 }
 
+func RandomEmail() string {
+	return fmt.Sprintf("%s@gmail.com", RandomString(8))
+}
