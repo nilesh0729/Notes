@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 	Database "github.com/nilesh0729/Notes/db/Result"
+	"github.com/nilesh0729/Notes/util"
 )
 
 type UserResponseFormat struct {
@@ -37,9 +38,15 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 		return
 	}
 
+	hashedPassword, err := util.HashedPassword(req.Password)
+	if err!= nil{
+		ctx.JSON(http.StatusInternalServerError, errResponse(err))
+		return
+	}
+
 	arg := Database.CreateUserParams{
 		Username:       req.Username,
-		HashedPassword: req.Password,
+		HashedPassword: hashedPassword,
 		Email:          req.Email,
 	}
 	user, err := server.store.CreateUser(ctx, arg)
