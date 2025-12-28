@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"errors"
 	"github.com/gin-gonic/gin"
 	Database "github.com/nilesh0729/Notes/internal/db/Result"
 	"github.com/nilesh0729/Notes/internal/tokens"
@@ -111,6 +112,13 @@ func (server *Server) GetNoteById(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(AuthorizationPayloadKey).(*tokens.Payload)
+	if note.Owner.String != authPayload.Username {
+		err := errors.New("note doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errResponse(err))
+		return
+	}
+
 	tags, _ := server.store.GetTagsForNote(ctx, req.NoteID)
 	ctx.JSON(http.StatusOK, ResponseFormating(note, transformTagRows(tags)))
 
@@ -139,6 +147,7 @@ func (server *Server) ListNotes(ctx *gin.Context) {
 			Column1: sql.NullString{String: req.Search, Valid: true},
 			Limit:   req.PageSize,
 			Offset:  req.Cursor, // Cursor acts as Offset for search
+			Owner:   sql.NullString{String: ctx.MustGet(AuthorizationPayloadKey).(*tokens.Payload).Username, Valid: true},
 		}
 		notes, err = server.store.SearchNotes(ctx, arg)
 	} else {
@@ -146,6 +155,7 @@ func (server *Server) ListNotes(ctx *gin.Context) {
 		arg := Database.ListNotesParams{
 			NoteID: req.Cursor,
 			Limit:  req.PageSize,
+			Owner:  sql.NullString{String: ctx.MustGet(AuthorizationPayloadKey).(*tokens.Payload).Username, Valid: true},
 		}
 		notes, err = server.store.ListNotes(ctx, arg)
 	}
@@ -180,6 +190,23 @@ func (server *Server) UpdateNote(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(AuthorizationPayloadKey).(*tokens.Payload)
+	existingNote, err := server.store.GetNoteById(ctx, noteId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errResponse(err))
+		return
+	}
+
+	if existingNote.Owner.String != authPayload.Username {
+		err := errors.New("note doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errResponse(err))
+		return
+	}
+
 	arg := Database.UpdateNoteParams{
 		NoteID:  noteId,
 		Title:   sql.NullString{String: req.Title, Valid: true},
@@ -204,9 +231,26 @@ func (server *Server) DeleteNote(ctx *gin.Context) {
 	noteIdStr := ctx.Param("id")
 	var noteId int32
 	fmt.Sscanf(noteIdStr, "%d", &noteId)
+
+	authPayload := ctx.MustGet(AuthorizationPayloadKey).(*tokens.Payload)
+	existingNote, err := server.store.GetNoteById(ctx, noteId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errResponse(err))
+		return
+	}
+
+	if existingNote.Owner.String != authPayload.Username {
+		err := errors.New("note doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errResponse(err))
+		return
+	}
 	
 	// Manually cascade delete
-	err := server.store.DeleteNoteTagsByNoteId(ctx, noteId)
+	err = server.store.DeleteNoteTagsByNoteId(ctx, noteId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errResponse(err))
 		return

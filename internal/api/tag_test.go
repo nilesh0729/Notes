@@ -241,6 +241,7 @@ func TestListTags(t *testing.T) {
 				arg := Database.ListTagsParams{
 					TagID: query.TagId,
 					Limit: query.PageSize,
+					Owner: sql.NullString{String: "user", Valid: true},
 				}
 				store.EXPECT().
 					ListTags(gomock.Any(), gomock.Eq(arg)).
@@ -265,6 +266,7 @@ func TestListTags(t *testing.T) {
 				arg := Database.ListTagsParams{
 					TagID: 0,
 					Limit: 2,
+					Owner: sql.NullString{String: "user", Valid: true},
 				}
 				store.EXPECT().
 					ListTags(gomock.Any(), gomock.Eq(arg)).
@@ -287,6 +289,7 @@ func TestListTags(t *testing.T) {
 				arg := Database.ListTagsParams{
 					TagID: query.TagId,
 					Limit: int32(n),
+					Owner: sql.NullString{String: "user", Valid: true},
 				}
 				store.EXPECT().
 					ListTags(gomock.Any(), gomock.Eq(arg)).

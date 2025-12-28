@@ -32,16 +32,6 @@ func (q *Queries) CreateTags(ctx context.Context, arg CreateTagsParams) (Tag, er
 	return i, err
 }
 
-const deleteTag = `-- name: DeleteTag :exec
-DELETE FROM Tags
-WHERE tag_id = $1
-`
-
-func (q *Queries) DeleteTag(ctx context.Context, tagID int32) error {
-	_, err := q.db.ExecContext(ctx, deleteTag, tagID)
-	return err
-}
-
 const deleteNoteTagsByTagId = `-- name: DeleteNoteTagsByTagId :exec
 DELETE FROM note_tags
 WHERE tag_id = $1
@@ -49,6 +39,16 @@ WHERE tag_id = $1
 
 func (q *Queries) DeleteNoteTagsByTagId(ctx context.Context, tagID int32) error {
 	_, err := q.db.ExecContext(ctx, deleteNoteTagsByTagId, tagID)
+	return err
+}
+
+const deleteTag = `-- name: DeleteTag :exec
+DELETE FROM Tags
+WHERE tag_id = $1
+`
+
+func (q *Queries) DeleteTag(ctx context.Context, tagID int32) error {
+	_, err := q.db.ExecContext(ctx, deleteTag, tagID)
 	return err
 }
 
@@ -67,18 +67,19 @@ func (q *Queries) GetTag(ctx context.Context, tagID int32) (Tag, error) {
 
 const listTags = `-- name: ListTags :many
 SELECT tag_id, owner, name FROM tags
-WHERE tag_id > $1
+WHERE tag_id > $1 AND owner = $3
 ORDER BY tag_id
 LIMIT $2
 `
 
 type ListTagsParams struct {
-	TagID int32 `json:"tag_id"`
-	Limit int32 `json:"limit"`
+	TagID int32          `json:"tag_id"`
+	Limit int32          `json:"limit"`
+	Owner sql.NullString `json:"owner"`
 }
 
 func (q *Queries) ListTags(ctx context.Context, arg ListTagsParams) ([]Tag, error) {
-	rows, err := q.db.QueryContext(ctx, listTags, arg.TagID, arg.Limit)
+	rows, err := q.db.QueryContext(ctx, listTags, arg.TagID, arg.Limit, arg.Owner)
 	if err != nil {
 		return nil, err
 	}

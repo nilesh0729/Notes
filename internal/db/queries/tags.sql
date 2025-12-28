@@ -14,7 +14,7 @@ LIMIT 1;
 
 -- name: ListTags :many
 SELECT * FROM tags
-WHERE tag_id > $1
+WHERE tag_id > $1 AND owner = $3
 ORDER BY tag_id
 LIMIT $2;
 

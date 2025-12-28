@@ -33,8 +33,13 @@ const getNotesForTag = `-- name: GetNotesForTag :many
 SELECT n.note_id, n.title, n.owner, n.content, n.pinned, n.archived, n.created_at, n.updated_at
 FROM notes n
 INNER JOIN note_tags nt ON n.note_id = nt.note_id
-WHERE nt.tag_id = $1
+WHERE nt.tag_id = $1 AND n.owner = $2
 `
+
+type GetNotesForTagParams struct {
+	TagID int32          `json:"tag_id"`
+	Owner sql.NullString `json:"owner"`
+}
 
 type GetNotesForTagRow struct {
 	NoteID    int32          `json:"note_id"`
@@ -47,8 +52,8 @@ type GetNotesForTagRow struct {
 	UpdatedAt sql.NullTime   `json:"updated_at"`
 }
 
-func (q *Queries) GetNotesForTag(ctx context.Context, tagID int32) ([]GetNotesForTagRow, error) {
-	rows, err := q.db.QueryContext(ctx, getNotesForTag, tagID)
+func (q *Queries) GetNotesForTag(ctx context.Context, arg GetNotesForTagParams) ([]GetNotesForTagRow, error) {
+	rows, err := q.db.QueryContext(ctx, getNotesForTag, arg.TagID, arg.Owner)
 	if err != nil {
 		return nil, err
 	}

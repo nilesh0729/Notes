@@ -17,7 +17,7 @@ WHERE nt.note_id = $1;
 SELECT n.note_id, n.title, n.owner, n.content, n.pinned, n.archived, n.created_at, n.updated_at
 FROM notes n
 INNER JOIN note_tags nt ON n.note_id = nt.note_id
-WHERE nt.tag_id = $1;
+WHERE nt.tag_id = $1 AND n.owner = $2;
 
 
 

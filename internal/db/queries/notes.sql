@@ -15,13 +15,13 @@ LIMIT 1;
 
 -- name: ListNotes :many
 SELECT * FROM notes
-WHERE note_id > $1
+WHERE note_id > $1 AND owner = $3
 ORDER BY note_id 
 LIMIT $2;
 
 -- name: SearchNotes :many
 SELECT * FROM notes
-WHERE (title ILIKE '%' || $1 || '%' OR content ILIKE '%' || $1 || '%')
+WHERE (title ILIKE '%' || $1 || '%' OR content ILIKE '%' || $1 || '%') AND owner = $4
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 

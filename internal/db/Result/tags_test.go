@@ -44,9 +44,15 @@ func TestGetTag(t *testing.T){
 
 func TestListTags(t *testing.T){
 	var CreatedTags []Tag
+	user := RandomUser(t)
 
 	for i:=0; i<10; i++{
-		tag := CreateRandomTags(t)
+		arg := CreateTagsParams{
+			Owner: sql.NullString{String: user.Username, Valid: true},
+			Name: util.RandomString(5),
+		}
+		tag, err := testQueries.CreateTags(context.Background(), arg)
+		require.NoError(t, err)
 		CreatedTags = append(CreatedTags, tag)
 	}
 
@@ -54,6 +60,7 @@ func TestListTags(t *testing.T){
 	arg := ListTagsParams{
 		TagID: TagStartingPoint,
 		Limit: 5,
+		Owner: sql.NullString{String: user.Username, Valid: true},
 	}
 
 	tags, err := testQueries.ListTags(context.Background(),arg)

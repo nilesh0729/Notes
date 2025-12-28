@@ -2,6 +2,7 @@ package Database
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -29,11 +30,16 @@ func TestAddTagToNote(t *testing.T) {
 }
 
 func TestGetNotesForTag(t *testing.T) {
-	note1 := CreateRandomNote(t)
-	note2 := CreateRandomNote(t)
-	tag1 := CreateRandomTags(t)
-
-	_ = CreateRandomNote(t)
+	user := RandomUser(t)
+	
+	note1 := createNoteForUser(t, user)
+	note2 := createNoteForUser(t, user)
+	tag1 := createTagForUser(t, user)
+	
+	// Create another user's note (should not be returned even if tagged)
+	otherUser := RandomUser(t)
+	otherNote := createNoteForUser(t, otherUser)
+	_ = otherNote
 
 	noteTag1 := CreateRandomNoteTag(t, note1, tag1)
 	require.NotEmpty(t, noteTag1)
@@ -41,7 +47,11 @@ func TestGetNotesForTag(t *testing.T) {
 	noteTag2 := CreateRandomNoteTag(t, note2, tag1)
 	require.NotEmpty(t, noteTag2)
 
-	notes, err := testQueries.GetNotesForTag(context.Background(), tag1.TagID)
+	arg := GetNotesForTagParams{
+		TagID: tag1.TagID,
+		Owner: sql.NullString{String: user.Username, Valid: true},
+	}
+	notes, err := testQueries.GetNotesForTag(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, notes)
 
@@ -58,6 +68,27 @@ func TestGetNotesForTag(t *testing.T) {
 	}
 
 	require.Equal(t, expected, retrievedNoteIDs)
+}
+
+func createNoteForUser(t *testing.T, user User) Note {
+	arg := CreateNoteParams{
+		Owner:   sql.NullString{String: user.Username, Valid: true},
+		Title:   sql.NullString{String: "title", Valid: true},
+		Content: sql.NullString{String: "content", Valid: true},
+	}
+	note, err := testQueries.CreateNote(context.Background(), arg)
+	require.NoError(t, err)
+	return note
+}
+
+func createTagForUser(t *testing.T, user User) Tag {
+	arg := CreateTagsParams{
+		Owner: sql.NullString{String: user.Username, Valid: true},
+		Name:  "tagname",
+	}
+	tag, err := testQueries.CreateTags(context.Background(), arg)
+	require.NoError(t, err)
+	return tag
 }
 
 func TestGetTagsForNote(t *testing.T) {
@@ -108,7 +139,11 @@ func TestRemoveTagFromNote(t *testing.T) {
 	err := testQueries.RemoveTagFromNote(context.Background(), arg)
 	require.NoError(t, err)
 
-	note, err := testQueries.GetNotesForTag(context.Background(), tag1.TagID)
+	argGet := GetNotesForTagParams{
+		TagID: tag1.TagID,
+		Owner: note1.Owner,
+	}
+	note, err := testQueries.GetNotesForTag(context.Background(), argGet)
 	require.NoError(t, err)
 	require.Empty(t, note)
 

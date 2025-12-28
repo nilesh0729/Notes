@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -79,6 +80,13 @@ func (server *Server) GetTag(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(AuthorizationPayloadKey).(*tokens.Payload)
+	if tag.Owner.String != authPayload.Username {
+		err := errors.New("tag doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, tag)
 }
 
@@ -99,6 +107,7 @@ func (server *Server) ListTags(ctx *gin.Context) {
 	arg := Database.ListTagsParams{
 		TagID: req.TagId,
 		Limit: req.PageSize,
+		Owner: sql.NullString{String: ctx.MustGet(AuthorizationPayloadKey).(*tokens.Payload).Username, Valid: true },
 	}
 	tags, err := server.store.ListTags(ctx, arg)
 	if err != nil {
@@ -114,8 +123,25 @@ func (server *Server) DeleteTag(ctx *gin.Context) {
 	var tagId int32
 	fmt.Sscanf(tagIdStr, "%d", &tagId)
 
+	authPayload := ctx.MustGet(AuthorizationPayloadKey).(*tokens.Payload)
+	existingTag, err := server.store.GetTag(ctx, tagId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errResponse(err))
+		return
+	}
+
+	if existingTag.Owner.String != authPayload.Username {
+		err := errors.New("tag doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errResponse(err))
+		return
+	}
+
 	// Manually cascade delete
-	err := server.store.DeleteNoteTagsByTagId(ctx, tagId)
+	err = server.store.DeleteNoteTagsByTagId(ctx, tagId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errResponse(err))
 		return

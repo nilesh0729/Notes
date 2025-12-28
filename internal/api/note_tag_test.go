@@ -21,6 +21,15 @@ import (
 
 func TestAddTagToNote(t *testing.T) {
 	notetag := RandomNoteTag()
+	
+	// Create separate Note and Tag objects with owner "user" for mocking
+	note := RandomNotes()
+	note.Owner = sql.NullString{String: "user", Valid: true}
+	note.NoteID = notetag.NoteID
+	
+	tag := RandomTag()
+	tag.Owner = sql.NullString{String: "user", Valid: true}
+	tag.TagID = notetag.TagID
 	testcase := []struct {
 		name          string
 		body          gin.H
@@ -38,6 +47,16 @@ func TestAddTagToNote(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, "user", time.Minute)
 			},
 			buildstubs: func(store *mockDB.MockStore) {
+				store.EXPECT().
+					GetNoteById(gomock.Any(), gomock.Eq(notetag.NoteID)).
+					Times(1).
+					Return(note, nil)
+				
+				store.EXPECT().
+					GetTag(gomock.Any(), gomock.Eq(notetag.TagID)).
+					Times(1).
+					Return(tag, nil)
+
 				arg := Database.AddTagToNoteParams(notetag)
 				store.EXPECT().
 					AddTagToNote(gomock.Any(), gomock.Eq(arg)).
@@ -78,6 +97,16 @@ func TestAddTagToNote(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, "user", time.Minute)
 			},
 			buildstubs: func(store *mockDB.MockStore) {
+				store.EXPECT().
+					GetNoteById(gomock.Any(), gomock.Eq(notetag.NoteID)).
+					Times(1).
+					Return(note, nil)
+
+				store.EXPECT().
+					GetTag(gomock.Any(), gomock.Eq(notetag.TagID)).
+					Times(1).
+					Return(tag, nil)
+
 				arg := Database.AddTagToNoteParams(notetag)
 				store.EXPECT().
 					AddTagToNote(gomock.Any(), gomock.Eq(arg)).

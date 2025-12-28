@@ -18,7 +18,7 @@ type Querier interface {
 	DeleteNoteTagsByTagId(ctx context.Context, tagID int32) error
 	DeleteTag(ctx context.Context, tagID int32) error
 	GetNoteById(ctx context.Context, noteID int32) (Note, error)
-	GetNotesForTag(ctx context.Context, tagID int32) ([]GetNotesForTagRow, error)
+	GetNotesForTag(ctx context.Context, arg GetNotesForTagParams) ([]GetNotesForTagRow, error)
 	GetTag(ctx context.Context, tagID int32) (Tag, error)
 	GetTagsForNote(ctx context.Context, noteID int32) ([]GetTagsForNoteRow, error)
 	GetUser(ctx context.Context, username string) (User, error)

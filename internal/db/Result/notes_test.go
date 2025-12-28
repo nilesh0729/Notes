@@ -57,9 +57,16 @@ func TestGetNoteById(t *testing.T) {
 
 func TestListNotes(t *testing.T) {
 	var Cnotes []Note
+	user := RandomUser(t)
 
 	for i := 0; i < 10; i++ {
-		note := CreateRandomNote(t)
+		arg := CreateNoteParams{
+			Owner:   sql.NullString{String: user.Username, Valid: true},
+			Title:   sql.NullString{String: util.RandomString(6), Valid: true},
+			Content: sql.NullString{String: util.RandomString(8), Valid: true},
+		}
+		note, err := testQueries.CreateNote(context.Background(), arg)
+		require.NoError(t, err)
 		Cnotes = append(Cnotes, note)
 	}
 	StartsAfterId := Cnotes[0].NoteID - 1
@@ -67,6 +74,7 @@ func TestListNotes(t *testing.T) {
 	arg := ListNotesParams{
 		NoteID: StartsAfterId,
 		Limit:  5,
+		Owner:  sql.NullString{String: user.Username, Valid: true},
 	}
 
 	Notes, err := testQueries.ListNotes(context.Background(), arg)

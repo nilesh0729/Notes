@@ -2,10 +2,12 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	Database "github.com/nilesh0729/Notes/internal/db/Result"
+	"github.com/nilesh0729/Notes/internal/tokens"
 )
 
 type AddTagToNoteRequest struct {
@@ -22,6 +24,40 @@ func (server *Server) AddTagToNote(ctx *gin.Context) {
 		return
 	}
 
+
+	authPayload := ctx.MustGet(AuthorizationPayloadKey).(*tokens.Payload)
+	
+	// Check Note Ownership
+	note, err := server.store.GetNoteById(ctx, req.NoteId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errResponse(err))
+		return
+	}
+	if note.Owner.String != authPayload.Username {
+		err := errors.New("note doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errResponse(err))
+		return
+	}
+	
+	// Check Tag Ownership
+	tag, err := server.store.GetTag(ctx, req.TagId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errResponse(err))
+		return
+	}
+	if tag.Owner.String != authPayload.Username {
+		err := errors.New("tag doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errResponse(err))
+		return
+	}
 
 	arg := Database.AddTagToNoteParams{
 		NoteID: req.NoteId,
@@ -49,7 +85,13 @@ func (server *Server) ListNotesForTag(ctx *gin.Context) {
 		return
 	}
 
-	notes, err := server.store.GetNotesForTag(ctx, req.TagID)
+	authPayload := ctx.MustGet(AuthorizationPayloadKey).(*tokens.Payload)
+	
+	arg := Database.GetNotesForTagParams{
+		TagID: req.TagID,
+		Owner: sql.NullString{String: authPayload.Username, Valid: true},
+	}
+	notes, err := server.store.GetNotesForTag(ctx, arg)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errResponse(err))

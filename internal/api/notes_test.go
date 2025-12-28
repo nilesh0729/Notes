@@ -265,6 +265,7 @@ func TestListNotes(t *testing.T) {
 				arg := Database.ListNotesParams{
 					NoteID: query.cursor,
 					Limit:  query.page_size,
+					Owner:  sql.NullString{String: "user", Valid: true},
 				}
 				store.EXPECT().
 					ListNotes(gomock.Any(), gomock.Eq(arg)).
@@ -296,6 +297,7 @@ func TestListNotes(t *testing.T) {
 				arg := Database.ListNotesParams{
 					NoteID: query.cursor,
 					Limit:  query.page_size,
+					Owner:  sql.NullString{String: "user", Valid: true},
 				}
 				store.EXPECT().
 					ListNotes(gomock.Any(), gomock.Eq(arg)).
@@ -319,6 +321,7 @@ func TestListNotes(t *testing.T) {
 				arg := Database.ListNotesParams{
 					NoteID: query.cursor,
 					Limit:  query.page_size,
+					Owner:  sql.NullString{String: "user", Valid: true},
 				}
 				store.EXPECT().
 					ListNotes(gomock.Any(), gomock.Eq(arg)).

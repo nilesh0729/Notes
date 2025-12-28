@@ -87,18 +87,19 @@ func (q *Queries) GetNoteById(ctx context.Context, noteID int32) (Note, error) {
 
 const listNotes = `-- name: ListNotes :many
 SELECT note_id, owner, title, content, pinned, archived, created_at, updated_at FROM notes
-WHERE note_id > $1
+WHERE note_id > $1 AND owner = $3
 ORDER BY note_id 
 LIMIT $2
 `
 
 type ListNotesParams struct {
-	NoteID int32 `json:"note_id"`
-	Limit  int32 `json:"limit"`
+	NoteID int32          `json:"note_id"`
+	Limit  int32          `json:"limit"`
+	Owner  sql.NullString `json:"owner"`
 }
 
 func (q *Queries) ListNotes(ctx context.Context, arg ListNotesParams) ([]Note, error) {
-	rows, err := q.db.QueryContext(ctx, listNotes, arg.NoteID, arg.Limit)
+	rows, err := q.db.QueryContext(ctx, listNotes, arg.NoteID, arg.Limit, arg.Owner)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +132,7 @@ func (q *Queries) ListNotes(ctx context.Context, arg ListNotesParams) ([]Note, e
 
 const searchNotes = `-- name: SearchNotes :many
 SELECT note_id, owner, title, content, pinned, archived, created_at, updated_at FROM notes
-WHERE (title ILIKE '%' || $1 || '%' OR content ILIKE '%' || $1 || '%')
+WHERE (title ILIKE '%' || $1 || '%' OR content ILIKE '%' || $1 || '%') AND owner = $4
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
 `
@@ -140,10 +141,16 @@ type SearchNotesParams struct {
 	Column1 sql.NullString `json:"column_1"`
 	Limit   int32          `json:"limit"`
 	Offset  int32          `json:"offset"`
+	Owner   sql.NullString `json:"owner"`
 }
 
 func (q *Queries) SearchNotes(ctx context.Context, arg SearchNotesParams) ([]Note, error) {
-	rows, err := q.db.QueryContext(ctx, searchNotes, arg.Column1, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, searchNotes,
+		arg.Column1,
+		arg.Limit,
+		arg.Offset,
+		arg.Owner,
+	)
 	if err != nil {
 		return nil, err
 	}
