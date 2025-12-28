@@ -10,10 +10,10 @@ Dropdb:
 	docker exec -it ganu dropdb -U root PapaJi
 
 MigrateUp:
-	migrate -path db/migrate_files -database "$(DB_URL)" -verbose up
+	migrate -path internal/db/migrate_files -database "$(DB_URL)" -verbose up
 
 MigrateDown:
-	migrate -path db/migrate_files -database "$(DB_URL)" -verbose down
+	migrate -path internal/db/migrate_files -database "$(DB_URL)" -verbose down
 
 Sqlc:
 	sqlc generate
@@ -22,9 +22,9 @@ Test:
 	go test -v -cover ./...
 
 Mock:
-	mockgen -package mockDB -destination db/Mock/gomock.go github.com/nilesh0729/Notes/db/Result Store
+	mockgen -package mockDB -destination internal/db/Mock/gomock.go github.com/nilesh0729/Notes/internal/db/Result Store
 
 Server:
-	go run main.go
+	go run cmd/api/main.go
 
 .PHONY:	Container	Createdb	Dropdb	MigrateDown	MigrateUp	Sqlc	Server
