@@ -41,6 +41,8 @@ func NewServer(config util.Config, store Database.Store) (*Server, error) {
 	authRoutes.POST("/tags", server.CreateTags)
 	authRoutes.GET("/tags/:id", server.GetTag)
 	authRoutes.GET("/tags", server.ListTags)
+	
+	authRoutes.GET("/tags/:id/notes", server.ListNotesForTag)
 
 	authRoutes.POST("/note_tags", server.AddTagToNote)
 
