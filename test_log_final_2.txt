@@ -1,0 +1,153 @@
+# github.com/nilesh0729/Notes/internal/db/Result
+internal/db/Result/notes_test.go:9:2: no required module provides package github.com/nilesh0729/Notes/util; to add it:
+	go get github.com/nilesh0729/Notes/util
+FAIL	github.com/nilesh0729/Notes/internal/db/Result [setup failed]
+?   	github.com/nilesh0729/Notes/cmd/api	[no test files]
+=== RUN   TestAuthMiddleware
+=== RUN   TestAuthMiddleware/OK
+[GIN] 2025/12/28 - 15:01:22 | 200 |      48.012µs |                 | GET      "/auth"
+=== RUN   TestAuthMiddleware/NoAuthorizationHeader
+[GIN] 2025/12/28 - 15:01:22 | 401 |       34.43µs |                 | GET      "/auth"
+=== RUN   TestAuthMiddleware/UnSupportedAuthorizationType
+[GIN] 2025/12/28 - 15:01:22 | 401 |       9.164µs |                 | GET      "/auth"
+=== RUN   TestAuthMiddleware/InvalidAuthorizationHeader
+[GIN] 2025/12/28 - 15:01:22 | 401 |       5.984µs |                 | GET      "/auth"
+=== RUN   TestAuthMiddleware/ExpiredToken
+[GIN] 2025/12/28 - 15:01:22 | 401 |      29.261µs |                 | GET      "/auth"
+--- PASS: TestAuthMiddleware (0.00s)
+    --- PASS: TestAuthMiddleware/OK (0.00s)
+    --- PASS: TestAuthMiddleware/NoAuthorizationHeader (0.00s)
+    --- PASS: TestAuthMiddleware/UnSupportedAuthorizationType (0.00s)
+    --- PASS: TestAuthMiddleware/InvalidAuthorizationHeader (0.00s)
+    --- PASS: TestAuthMiddleware/ExpiredToken (0.00s)
+=== RUN   TestAddTagToNote
+=== RUN   TestAddTagToNote/OK
+[GIN] 2025/12/28 - 15:01:22 | 200 |     148.332µs |                 | POST     "/note_tags"
+=== RUN   TestAddTagToNote/BadRequest
+[GIN] 2025/12/28 - 15:01:22 | 400 |      27.799µs |                 | POST     "/note_tags"
+=== RUN   TestAddTagToNote/InternalServerError
+[GIN] 2025/12/28 - 15:01:22 | 500 |      89.965µs |                 | POST     "/note_tags"
+--- PASS: TestAddTagToNote (0.00s)
+    --- PASS: TestAddTagToNote/OK (0.00s)
+    --- PASS: TestAddTagToNote/BadRequest (0.00s)
+    --- PASS: TestAddTagToNote/InternalServerError (0.00s)
+=== RUN   TestCreateNoteApi
+=== RUN   TestCreateNoteApi/OK
+[GIN] 2025/12/28 - 15:01:22 | 200 |      63.373µs |                 | POST     "/notes"
+=== RUN   TestCreateNoteApi/BadRequest
+[GIN] 2025/12/28 - 15:01:22 | 400 |      35.455µs |                 | POST     "/notes"
+=== RUN   TestCreateNoteApi/InternalServerError
+[GIN] 2025/12/28 - 15:01:22 | 500 |      31.788µs |                 | POST     "/notes"
+--- PASS: TestCreateNoteApi (0.00s)
+    --- PASS: TestCreateNoteApi/OK (0.00s)
+    --- PASS: TestCreateNoteApi/BadRequest (0.00s)
+    --- PASS: TestCreateNoteApi/InternalServerError (0.00s)
+=== RUN   TestGetNotesApi
+=== RUN   TestGetNotesApi/OK
+[GIN] 2025/12/28 - 15:01:22 | 200 |      27.452µs |                 | GET      "/notes/34"
+=== RUN   TestGetNotesApi/BadRequest
+[GIN] 2025/12/28 - 15:01:22 | 400 |      28.096µs |                 | GET      "/notes/0"
+=== RUN   TestGetNotesApi/NotFound
+[GIN] 2025/12/28 - 15:01:22 | 404 |      31.437µs |                 | GET      "/notes/34"
+=== RUN   TestGetNotesApi/InternalServerError
+[GIN] 2025/12/28 - 15:01:22 | 500 |      36.019µs |                 | GET      "/notes/34"
+--- PASS: TestGetNotesApi (0.00s)
+    --- PASS: TestGetNotesApi/OK (0.00s)
+    --- PASS: TestGetNotesApi/BadRequest (0.00s)
+    --- PASS: TestGetNotesApi/NotFound (0.00s)
+    --- PASS: TestGetNotesApi/InternalServerError (0.00s)
+=== RUN   TestListNotes
+=== RUN   TestListNotes/OK
+[GIN] 2025/12/28 - 15:01:22 | 200 |      84.138µs |                 | GET      "/notes?cursor=1&page_size=10"
+=== RUN   TestListNotes/BadRequest
+[GIN] 2025/12/28 - 15:01:22 | 400 |      21.642µs |                 | GET      "/notes?cursor=0&page_size=3"
+=== RUN   TestListNotes/InternalServerError
+[GIN] 2025/12/28 - 15:01:22 | 500 |      20.594µs |                 | GET      "/notes?cursor=1&page_size=10"
+--- PASS: TestListNotes (0.00s)
+    --- PASS: TestListNotes/OK (0.00s)
+    --- PASS: TestListNotes/BadRequest (0.00s)
+    --- PASS: TestListNotes/InternalServerError (0.00s)
+=== RUN   TestCreateTag
+=== RUN   TestCreateTag/Ok
+[GIN] 2025/12/28 - 15:01:22 | 200 |      49.392µs |                 | POST     "/tags"
+=== RUN   TestCreateTag/BadRequest
+[GIN] 2025/12/28 - 15:01:22 | 400 |      31.667µs |                 | POST     "/tags"
+=== RUN   TestCreateTag/InternalServerError
+[GIN] 2025/12/28 - 15:01:22 | 500 |      42.082µs |                 | POST     "/tags"
+--- PASS: TestCreateTag (0.00s)
+    --- PASS: TestCreateTag/Ok (0.00s)
+    --- PASS: TestCreateTag/BadRequest (0.00s)
+    --- PASS: TestCreateTag/InternalServerError (0.00s)
+=== RUN   TestGetTag
+=== RUN   TestGetTag/OK
+[GIN] 2025/12/28 - 15:01:22 | 200 |      67.707µs |                 | GET      "/tags/8"
+=== RUN   TestGetTag/BadRequest
+[GIN] 2025/12/28 - 15:01:22 | 400 |      23.899µs |                 | GET      "/tags/0"
+=== RUN   TestGetTag/InternalServerError
+[GIN] 2025/12/28 - 15:01:22 | 500 |      24.274µs |                 | GET      "/tags/8"
+--- PASS: TestGetTag (0.00s)
+    --- PASS: TestGetTag/OK (0.00s)
+    --- PASS: TestGetTag/BadRequest (0.00s)
+    --- PASS: TestGetTag/InternalServerError (0.00s)
+=== RUN   TestListTags
+=== RUN   TestListTags/OK
+[GIN] 2025/12/28 - 15:01:22 | 200 |      56.488µs |                 | GET      "/tags?tag_id=1&page_size=5"
+=== RUN   TestListTags/BadRequest
+[GIN] 2025/12/28 - 15:01:22 | 400 |      52.009µs |                 | GET      "/tags?tag_id=0&page_size=0"
+=== RUN   TestListTags/InternalServerError
+[GIN] 2025/12/28 - 15:01:22 | 500 |      29.885µs |                 | GET      "/tags?tag_id=1&page_size=5"
+--- PASS: TestListTags (0.00s)
+    --- PASS: TestListTags/OK (0.00s)
+    --- PASS: TestListTags/BadRequest (0.00s)
+    --- PASS: TestListTags/InternalServerError (0.00s)
+=== RUN   TestCreateUser
+=== RUN   TestCreateUser/OK
+[GIN] 2025/12/28 - 15:01:23 | 200 |  161.516308ms |                 | POST     "/user"
+=== RUN   TestCreateUser/BadRequest
+[GIN] 2025/12/28 - 15:01:23 | 400 |      76.111µs |                 | POST     "/user"
+=== RUN   TestCreateUser/InternalServerError
+[GIN] 2025/12/28 - 15:01:23 | 500 |   80.693409ms |                 | POST     "/user"
+=== RUN   TestCreateUser/UniqueUserVoilation
+[GIN] 2025/12/28 - 15:01:23 | 403 |   81.734143ms |                 | POST     "/user"
+=== RUN   TestCreateUser/PasswordTooShort
+[GIN] 2025/12/28 - 15:01:23 | 400 |      57.838µs |                 | POST     "/user"
+--- PASS: TestCreateUser (0.41s)
+    --- PASS: TestCreateUser/OK (0.16s)
+    --- PASS: TestCreateUser/BadRequest (0.00s)
+    --- PASS: TestCreateUser/InternalServerError (0.08s)
+    --- PASS: TestCreateUser/UniqueUserVoilation (0.08s)
+    --- PASS: TestCreateUser/PasswordTooShort (0.00s)
+=== RUN   TestLoginUser
+=== RUN   TestLoginUser/OK
+[GIN] 2025/12/28 - 15:01:23 | 200 |   81.818232ms |                 | POST     "/login"
+=== RUN   TestLoginUser/UserNotFound
+[GIN] 2025/12/28 - 15:01:23 | 404 |      55.049µs |                 | POST     "/login"
+=== RUN   TestLoginUser/IncorrectPassword
+[GIN] 2025/12/28 - 15:01:23 | 401 |   92.101028ms |                 | POST     "/login"
+=== RUN   TestLoginUser/InternalServerError
+[GIN] 2025/12/28 - 15:01:23 | 500 |     112.707µs |                 | POST     "/login"
+--- PASS: TestLoginUser (0.34s)
+    --- PASS: TestLoginUser/OK (0.08s)
+    --- PASS: TestLoginUser/UserNotFound (0.00s)
+    --- PASS: TestLoginUser/IncorrectPassword (0.09s)
+    --- PASS: TestLoginUser/InternalServerError (0.00s)
+PASS
+ok  	github.com/nilesh0729/Notes/internal/api	(cached)
+?   	github.com/nilesh0729/Notes/internal/db/Mock	[no test files]
+=== RUN   TestJWTMaker
+--- PASS: TestJWTMaker (0.00s)
+=== RUN   TestExpiredJWTToken
+--- PASS: TestExpiredJWTToken (0.00s)
+=== RUN   TestInvalidTokenAlgNone
+--- PASS: TestInvalidTokenAlgNone (0.00s)
+=== RUN   TestPasetoMaker
+--- PASS: TestPasetoMaker (0.00s)
+=== RUN   TestExpiredPasetoToken
+--- PASS: TestExpiredPasetoToken (0.00s)
+PASS
+ok  	github.com/nilesh0729/Notes/internal/tokens	(cached)
+=== RUN   TestHashedPassword
+--- PASS: TestHashedPassword (0.37s)
+PASS
+ok  	github.com/nilesh0729/Notes/internal/util	(cached)
+FAIL

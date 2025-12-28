@@ -5,9 +5,9 @@ import (
 	"log"
 
 	_ "github.com/lib/pq"
-	"github.com/nilesh0729/Notes/api"
-	Database "github.com/nilesh0729/Notes/db/Result"
-	"github.com/nilesh0729/Notes/util"
+	"github.com/nilesh0729/Notes/internal/api"
+	Database "github.com/nilesh0729/Notes/internal/db/Result"
+	"github.com/nilesh0729/Notes/internal/util"
 )
 
 func main() {

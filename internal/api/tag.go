@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	Database "github.com/nilesh0729/Notes/db/Result"
+	Database "github.com/nilesh0729/Notes/internal/db/Result"
 )
 type TagResponseFormat struct{
 	TagId int32 `json:"tag_id"`

@@ -11,11 +11,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
-	Database "github.com/nilesh0729/Notes/db/Result"
-	mockDB "github.com/nilesh0729/Notes/db/Mock"
+	Database "github.com/nilesh0729/Notes/internal/db/Result"
+	mockDB "github.com/nilesh0729/Notes/internal/db/Mock"
 
 	"github.com/stretchr/testify/require"
-	"github.com/nilesh0729/Notes/tokens"
+	"github.com/nilesh0729/Notes/internal/tokens"
 	"time"
 )
 

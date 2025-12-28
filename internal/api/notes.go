@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	Database "github.com/nilesh0729/Notes/db/Result"
-	"github.com/nilesh0729/Notes/tokens"
+	Database "github.com/nilesh0729/Notes/internal/db/Result"
+	"github.com/nilesh0729/Notes/internal/tokens"
 )
 
 type ResponseFormat struct {

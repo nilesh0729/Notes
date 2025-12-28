@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	Database "github.com/nilesh0729/Notes/db/Result"
-	"github.com/nilesh0729/Notes/tokens"
-	"github.com/nilesh0729/Notes/util"
+	Database "github.com/nilesh0729/Notes/internal/db/Result"
+	"github.com/nilesh0729/Notes/internal/tokens"
+	"github.com/nilesh0729/Notes/internal/util"
 	"github.com/stretchr/testify/require"
 	"fmt"
 	"net/http"

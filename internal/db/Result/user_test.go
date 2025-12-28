@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/nilesh0729/Notes/util"
+	"github.com/nilesh0729/Notes/internal/util"
 	"github.com/stretchr/testify/require"
 )
 

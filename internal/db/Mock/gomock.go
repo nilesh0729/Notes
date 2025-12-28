@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	Database "github.com/nilesh0729/Notes/db/Result"
+	Database "github.com/nilesh0729/Notes/internal/db/Result"
 )
 
 // MockStore is a mock of Store interface.

@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
-	Database "github.com/nilesh0729/Notes/db/Result"
-	"github.com/nilesh0729/Notes/util"
+	Database "github.com/nilesh0729/Notes/internal/db/Result"
+	"github.com/nilesh0729/Notes/internal/util"
 )
 
 type UserResponseFormat struct {
