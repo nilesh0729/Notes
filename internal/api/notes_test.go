@@ -143,10 +143,14 @@ func TestGetNotesApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, note.Owner.String, time.Minute)
 			},
 			buildStubs: func(store *mockDB.MockStore) {
-				store.EXPECT().
 					GetNoteById(gomock.Any(), gomock.Eq(note.NoteID)).
 					Times(1).
 					Return(note, nil)
+
+				store.EXPECT().
+					GetTagsForNote(gomock.Any(), gomock.Eq(note.NoteID)).
+					Times(1).
+					Return([]Database.GetTagsForNoteRow{}, nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -265,6 +269,13 @@ func TestListNotes(t *testing.T) {
 					ListNotes(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
 					Return(notes, nil)
+
+				for _, note := range notes {
+					store.EXPECT().
+						GetTagsForNote(gomock.Any(), gomock.Eq(note.NoteID)).
+						Times(1).
+						Return([]Database.GetTagsForNoteRow{}, nil)
+				}
 
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
