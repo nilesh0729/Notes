@@ -109,6 +109,34 @@ func (mr *MockStoreMockRecorder) DeleteNote(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockStore)(nil).DeleteNote), arg0, arg1)
 }
 
+// DeleteNoteTagsByNoteId mocks base method.
+func (m *MockStore) DeleteNoteTagsByNoteId(arg0 context.Context, arg1 int32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteNoteTagsByNoteId", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteNoteTagsByNoteId indicates an expected call of DeleteNoteTagsByNoteId.
+func (mr *MockStoreMockRecorder) DeleteNoteTagsByNoteId(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNoteTagsByNoteId", reflect.TypeOf((*MockStore)(nil).DeleteNoteTagsByNoteId), arg0, arg1)
+}
+
+// DeleteNoteTagsByTagId mocks base method.
+func (m *MockStore) DeleteNoteTagsByTagId(arg0 context.Context, arg1 int32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteNoteTagsByTagId", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteNoteTagsByTagId indicates an expected call of DeleteNoteTagsByTagId.
+func (mr *MockStoreMockRecorder) DeleteNoteTagsByTagId(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNoteTagsByTagId", reflect.TypeOf((*MockStore)(nil).DeleteNoteTagsByTagId), arg0, arg1)
+}
+
 // DeleteTag mocks base method.
 func (m *MockStore) DeleteTag(arg0 context.Context, arg1 int32) error {
 	m.ctrl.T.Helper()
@@ -196,6 +224,21 @@ func (m *MockStore) GetUser(arg0 context.Context, arg1 string) (Database.User, e
 func (mr *MockStoreMockRecorder) GetUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockStore)(nil).GetUser), arg0, arg1)
+}
+
+// SearchNotes mocks base method.
+func (m *MockStore) SearchNotes(arg0 context.Context, arg1 Database.SearchNotesParams) ([]Database.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchNotes", arg0, arg1)
+	ret0, _ := ret[0].([]Database.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchNotes indicates an expected call of SearchNotes.
+func (mr *MockStoreMockRecorder) SearchNotes(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchNotes", reflect.TypeOf((*MockStore)(nil).SearchNotes), arg0, arg1)
 }
 
 // ListNotes mocks base method.

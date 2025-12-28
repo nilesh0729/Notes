@@ -37,10 +37,13 @@ func NewServer(config util.Config, store Database.Store) (*Server, error) {
 	authRoutes.POST("/notes", server.CreateNote)
 	authRoutes.GET("/notes/:id", server.GetNoteById)
 	authRoutes.GET("/notes", server.ListNotes)
+	authRoutes.PUT("/notes/:id", server.UpdateNote)
+	authRoutes.DELETE("/notes/:id", server.DeleteNote)
 
 	authRoutes.POST("/tags", server.CreateTags)
 	authRoutes.GET("/tags/:id", server.GetTag)
 	authRoutes.GET("/tags", server.ListTags)
+	authRoutes.DELETE("/tags/:id", server.DeleteTag)
 	
 	authRoutes.GET("/tags/:id/notes", server.ListNotesForTag)
 

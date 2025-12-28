@@ -53,6 +53,16 @@ func (q *Queries) DeleteNote(ctx context.Context, noteID int32) error {
 	return err
 }
 
+const deleteNoteTagsByNoteId = `-- name: DeleteNoteTagsByNoteId :exec
+DELETE FROM note_tags
+WHERE note_id = $1
+`
+
+func (q *Queries) DeleteNoteTagsByNoteId(ctx context.Context, noteID int32) error {
+	_, err := q.db.ExecContext(ctx, deleteNoteTagsByNoteId, noteID)
+	return err
+}
+
 const getNoteById = `-- name: GetNoteById :one
 SELECT note_id, owner, title, content, pinned, archived, created_at, updated_at FROM notes
 WHERE note_id = $1
@@ -89,6 +99,51 @@ type ListNotesParams struct {
 
 func (q *Queries) ListNotes(ctx context.Context, arg ListNotesParams) ([]Note, error) {
 	rows, err := q.db.QueryContext(ctx, listNotes, arg.NoteID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Note{}
+	for rows.Next() {
+		var i Note
+		if err := rows.Scan(
+			&i.NoteID,
+			&i.Owner,
+			&i.Title,
+			&i.Content,
+			&i.Pinned,
+			&i.Archived,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchNotes = `-- name: SearchNotes :many
+SELECT note_id, owner, title, content, pinned, archived, created_at, updated_at FROM notes
+WHERE (title ILIKE '%' || $1 || '%' OR content ILIKE '%' || $1 || '%')
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type SearchNotesParams struct {
+	Column1 sql.NullString `json:"column_1"`
+	Limit   int32          `json:"limit"`
+	Offset  int32          `json:"offset"`
+}
+
+func (q *Queries) SearchNotes(ctx context.Context, arg SearchNotesParams) ([]Note, error) {
+	rows, err := q.db.QueryContext(ctx, searchNotes, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

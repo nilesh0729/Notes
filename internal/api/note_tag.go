@@ -59,5 +59,19 @@ func (server *Server) ListNotesForTag(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, notes)
+	var dbNotes []Database.Note
+	for _, rawNote := range notes {
+		dbNotes = append(dbNotes, Database.Note{
+			NoteID:    rawNote.NoteID,
+			Title:     rawNote.Title,
+			Owner:     rawNote.Owner,
+			Content:   rawNote.Content,
+			Pinned:    rawNote.Pinned,
+			Archived:  rawNote.Archived,
+			CreatedAt: rawNote.CreatedAt,
+			UpdatedAt: rawNote.UpdatedAt,
+		})
+	}
+
+	ctx.JSON(http.StatusOK, server.formatManyNotes(ctx, dbNotes))
 }

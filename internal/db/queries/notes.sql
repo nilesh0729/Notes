@@ -19,6 +19,12 @@ WHERE note_id > $1
 ORDER BY note_id 
 LIMIT $2;
 
+-- name: SearchNotes :many
+SELECT * FROM notes
+WHERE (title ILIKE '%' || $1 || '%' OR content ILIKE '%' || $1 || '%')
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
+
 -- name: UpdateNote :one
 UPDATE notes
   set title = $2,
@@ -28,4 +34,8 @@ RETURNING *;
 
 -- name: DeleteNote :exec
 DELETE FROM notes
+WHERE note_id = $1;
+
+-- name: DeleteNoteTagsByNoteId :exec
+DELETE FROM note_tags
 WHERE note_id = $1;

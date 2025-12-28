@@ -27,3 +27,7 @@ RETURNING *;
 -- name: DeleteTag :exec
 DELETE FROM Tags
 WHERE tag_id = $1;
+
+-- name: DeleteNoteTagsByTagId :exec
+DELETE FROM note_tags
+WHERE tag_id = $1;

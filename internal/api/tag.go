@@ -2,10 +2,12 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	Database "github.com/nilesh0729/Notes/internal/db/Result"
+	"github.com/nilesh0729/Notes/internal/tokens"
 )
 type TagResponseFormat struct{
 	TagId int32 `json:"tag_id"`
@@ -31,7 +33,6 @@ func formatManytags(tags []Database.Tag) []TagResponseFormat {
 }
 
 type CreateTagsRequest struct {
-	Owner string `json:"owner" binding:"required"`
 	Name  string `json:"name" binding:"required"`
 }
 
@@ -42,8 +43,11 @@ func (server *Server) CreateTags(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errResponse(err))
 		return
 	}
+	
+	authPayload := ctx.MustGet(AuthorizationPayloadKey).(*tokens.Payload)
+
 	arg := Database.CreateTagsParams{
-		Owner: sql.NullString{String: req.Owner, Valid: true},
+		Owner: sql.NullString{String: authPayload.Username, Valid: true},
 		Name: req.Name,
 	}
 
@@ -79,8 +83,8 @@ func (server *Server) GetTag(ctx *gin.Context) {
 }
 
 type ListTagsRequest struct {
-	TagId    int32 `form:"tag_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=20"`
+	TagId    int32 `form:"tag_id"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=100"`
 }
 
 func (server *Server) ListTags(ctx *gin.Context) {
@@ -103,4 +107,25 @@ func (server *Server) ListTags(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, formatManytags(tags))
+}
+
+func (server *Server) DeleteTag(ctx *gin.Context) {
+	tagIdStr := ctx.Param("id")
+	var tagId int32
+	fmt.Sscanf(tagIdStr, "%d", &tagId)
+
+	// Manually cascade delete
+	err := server.store.DeleteNoteTagsByTagId(ctx, tagId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errResponse(err))
+		return
+	}
+
+	err = server.store.DeleteTag(ctx, tagId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "tag deleted"})
 }

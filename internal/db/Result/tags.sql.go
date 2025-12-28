@@ -42,6 +42,16 @@ func (q *Queries) DeleteTag(ctx context.Context, tagID int32) error {
 	return err
 }
 
+const deleteNoteTagsByTagId = `-- name: DeleteNoteTagsByTagId :exec
+DELETE FROM note_tags
+WHERE tag_id = $1
+`
+
+func (q *Queries) DeleteNoteTagsByTagId(ctx context.Context, tagID int32) error {
+	_, err := q.db.ExecContext(ctx, deleteNoteTagsByTagId, tagID)
+	return err
+}
+
 const getTag = `-- name: GetTag :one
 SELECT tag_id, owner, name FROM tags
 WHERE tag_id = $1 

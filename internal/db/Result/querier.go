@@ -14,6 +14,8 @@ type Querier interface {
 	CreateTags(ctx context.Context, arg CreateTagsParams) (Tag, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteNote(ctx context.Context, noteID int32) error
+	DeleteNoteTagsByNoteId(ctx context.Context, noteID int32) error
+	DeleteNoteTagsByTagId(ctx context.Context, tagID int32) error
 	DeleteTag(ctx context.Context, tagID int32) error
 	GetNoteById(ctx context.Context, noteID int32) (Note, error)
 	GetNotesForTag(ctx context.Context, tagID int32) ([]GetNotesForTagRow, error)
@@ -23,6 +25,7 @@ type Querier interface {
 	ListNotes(ctx context.Context, arg ListNotesParams) ([]Note, error)
 	ListTags(ctx context.Context, arg ListTagsParams) ([]Tag, error)
 	RemoveTagFromNote(ctx context.Context, arg RemoveTagFromNoteParams) error
+	SearchNotes(ctx context.Context, arg SearchNotesParams) ([]Note, error)
 	UpdateNote(ctx context.Context, arg UpdateNoteParams) (Note, error)
 	UpdateTag(ctx context.Context, arg UpdateTagParams) (Tag, error)
 }
