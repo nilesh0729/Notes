@@ -143,6 +143,7 @@ func TestGetNotesApi(t *testing.T) {
 				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, note.Owner.String, time.Minute)
 			},
 			buildStubs: func(store *mockDB.MockStore) {
+				store.EXPECT().
 					GetNoteById(gomock.Any(), gomock.Eq(note.NoteID)).
 					Times(1).
 					Return(note, nil)
