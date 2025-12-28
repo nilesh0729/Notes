@@ -365,7 +365,7 @@ func NoteBodyMatching(t *testing.T, body *bytes.Buffer, note Database.Note) {
 	err = json.Unmarshal(data, &GotNote)
 	require.NoError(t, err)
 
-	expected := ResponseFormating(note)
+	expected := ResponseFormating(note, []TagResponseFormat{})
 	require.Equal(t, expected, GotNote)
 }
 
@@ -373,7 +373,10 @@ func NotesBodyMatching(t *testing.T, body *bytes.Buffer, expected []Database.Not
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	expectedFormatted := formatManyNotes(expected)
+	var expectedFormatted []ResponseFormat
+	for _, note := range expected {
+		expectedFormatted = append(expectedFormatted, ResponseFormating(note, []TagResponseFormat{}))
+	}
 
 	var gotFormatted []ResponseFormat
 	err = json.Unmarshal(data, &gotFormatted)
