@@ -38,7 +38,7 @@ func ResponseFormating(note Database.Note, tags []TagResponseFormat) ResponseFor
 }
 
 func transformTagRows(rows []Database.GetTagsForNoteRow) []TagResponseFormat {
-	var tags []TagResponseFormat
+	tags := []TagResponseFormat{}
 	for _, row := range rows {
 		tags = append(tags, TagResponseFormat{
 			TagId: row.TagID,
