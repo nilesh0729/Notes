@@ -27,3 +27,7 @@ func RandomString(n int) string {
 func RandomEmail() string {
 	return fmt.Sprintf("%s@gmail.com", RandomString(8))
 }
+
+func RandomOwner() string {
+	return RandomString(6)
+}

@@ -17,6 +17,8 @@ import (
 
 	"github.com/nilesh0729/Notes/util"
 	"github.com/stretchr/testify/require"
+	"github.com/nilesh0729/Notes/tokens"
+	"time"
 )
 
 func TestCreateTag(t *testing.T) {
@@ -30,6 +32,7 @@ func TestCreateTag(t *testing.T) {
 	testcases := []struct {
 		name          string
 		body          gin.H
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker tokens.Maker)
 		buildStubs    func(store *mockDB.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
@@ -38,6 +41,9 @@ func TestCreateTag(t *testing.T) {
 			body: gin.H{
 				"owner": tag.Owner.String,
 				"name":  tag.Name,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, tag.Owner.String, time.Minute)
 			},
 			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
@@ -55,6 +61,9 @@ func TestCreateTag(t *testing.T) {
 			body: gin.H{
 				"name": tag.TagID,
 			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, tag.Owner.String, time.Minute)
+			},
 			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					CreateTags(gomock.Any(), gomock.Eq(arg)).
@@ -69,6 +78,9 @@ func TestCreateTag(t *testing.T) {
 			body: gin.H{
 				"owner": tag.Owner.String,
 				"name":  tag.Name,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, tag.Owner.String, time.Minute)
 			},
 			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
@@ -91,7 +103,7 @@ func TestCreateTag(t *testing.T) {
 			store := mockDB.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := NewServer(store)
+			server, _ := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			url := "/tags"
@@ -103,6 +115,8 @@ func TestCreateTag(t *testing.T) {
 
 			request, err := http.NewRequest(http.MethodPost, url, newBody)
 			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
 
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
@@ -116,12 +130,16 @@ func TestGetTag(t *testing.T) {
 	testcases := []struct {
 		name          string
 		tagId         int32
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker tokens.Maker)
 		buildstubs    func(store *mockDB.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:  "OK",
 			tagId: tag.TagID,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, tag.Owner.String, time.Minute)
+			},
 			buildstubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					GetTag(gomock.Any(), gomock.Eq(tag.TagID)).
@@ -136,6 +154,9 @@ func TestGetTag(t *testing.T) {
 		{
 			name:  "BadRequest",
 			tagId: 0,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, tag.Owner.String, time.Minute)
+			},
 			buildstubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					GetTag(gomock.Any(), gomock.Eq(tag.TagID)).
@@ -148,6 +169,9 @@ func TestGetTag(t *testing.T) {
 		{
 			name:  "InternalServerError",
 			tagId: tag.TagID,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, tag.Owner.String, time.Minute)
+			},
 			buildstubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					GetTag(gomock.Any(), gomock.Any()).
@@ -169,13 +193,15 @@ func TestGetTag(t *testing.T) {
 			store := mockDB.NewMockStore(ctrl)
 			tc.buildstubs(store)
 
-			server := NewServer(store)
+			server, _ := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/tags/%d", tc.tagId)
 
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
 
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
@@ -198,6 +224,7 @@ func TestListTags(t *testing.T) {
 	testcases := []struct {
 		name          string
 		query         Query
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker tokens.Maker)
 		buildstubs    func(store *mockDB.MockStore, query Query)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
@@ -206,6 +233,9 @@ func TestListTags(t *testing.T) {
 			query: Query{
 				TagId:    1,
 				PageSize: int32(n),
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, "user", time.Minute)
 			},
 			buildstubs: func(store *mockDB.MockStore, query Query) {
 				arg := Database.ListTagsParams{
@@ -228,6 +258,9 @@ func TestListTags(t *testing.T) {
 				TagId:    0,
 				PageSize: int32(0),
 			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, "user", time.Minute)
+			},
 			buildstubs: func(store *mockDB.MockStore, query Query) {
 				arg := Database.ListTagsParams{
 					TagID: 0,
@@ -246,6 +279,9 @@ func TestListTags(t *testing.T) {
 			query: Query{
 				TagId:    1,
 				PageSize: int32(n),
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, "user", time.Minute)
 			},
 			buildstubs: func(store *mockDB.MockStore, query Query) {
 				arg := Database.ListTagsParams{
@@ -272,12 +308,14 @@ func TestListTags(t *testing.T) {
 			store := mockDB.NewMockStore(ctrl)
 			tc.buildstubs(store, tc.query)
 
-			server := NewServer(store)
+			server, _ := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/tags?tag_id=%d&page_size=%d", tc.query.TagId, tc.query.PageSize)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
 
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)

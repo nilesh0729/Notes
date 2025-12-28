@@ -1,43 +1,52 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	Database "github.com/nilesh0729/Notes/db/Result"
+	"github.com/nilesh0729/Notes/tokens"
+	"github.com/nilesh0729/Notes/util"
 )
 
 type Server struct {
-	store  Database.Store
-	router *gin.Engine
+	config     util.Config
+	store      Database.Store
+	tokenMaker tokens.Maker
+	router     *gin.Engine
 }
 
-func NewServer(store Database.Store) *Server{
+func NewServer(config util.Config, store Database.Store) (*Server, error) {
+	tokenMaker, err := tokens.NewPasetoMaker(config.Secret)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker: %w", err)
+	}
+
 	server := &Server{
-		store : store,
+		config:     config,
+		store:      store,
+		tokenMaker: tokenMaker,
 	}
 	router := gin.Default()
 
-	router.POST("/notes", server.CreateNote)
-	
-	router.GET("/notes/:id", server.GetNoteById)
-
-	router.GET("/notes", server.ListNotes)
-
-	router.POST("/tags", server.CreateTags)
-
-	router.GET("/tags/:id", server.GetTag)
-
-	router.GET("/tags", server.ListTags)
-
-	router.POST("/note_tags", server.AddTagToNote)
-
 	router.POST("/user", server.CreateUser)
+	router.POST("/login", server.LoginUser)
 
-	router.GET("/user/:username", server.Getuser)
+	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 
-	
+	authRoutes.POST("/notes", server.CreateNote)
+	authRoutes.GET("/notes/:id", server.GetNoteById)
+	authRoutes.GET("/notes", server.ListNotes)
+
+	authRoutes.POST("/tags", server.CreateTags)
+	authRoutes.GET("/tags/:id", server.GetTag)
+	authRoutes.GET("/tags", server.ListTags)
+
+	authRoutes.POST("/note_tags", server.AddTagToNote)
+
 	server.router = router
 
-	return server
+	return server, nil
 }
 
 func (server *Server) Start(address string) error{

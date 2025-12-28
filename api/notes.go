@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	Database "github.com/nilesh0729/Notes/db/Result"
+	"github.com/nilesh0729/Notes/tokens"
 )
 
 type ResponseFormat struct {
@@ -43,7 +44,6 @@ func formatManyNotes(notes []Database.Note) []ResponseFormat {
 }
 
 type CreateNoteRequest struct {
-	Owner   string `json:"owner" binding:"required"`
 	Title   string `json:"title" binding:"required"`
 	Content string `json:"content" binding:"required"`
 }
@@ -56,8 +56,10 @@ func (server *Server) CreateNote(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errResponse(err))
 		return
 	}
+	authPayload := ctx.MustGet(AuthorizationPayloadKey).(*tokens.Payload)
+
 	arg := Database.CreateNoteParams{
-		Owner:   sql.NullString{String: req.Owner, Valid: true},
+		Owner:   sql.NullString{String: authPayload.Username, Valid: true},
 		Title:   sql.NullString{String: req.Title, Valid: true},
 		Content: sql.NullString{String: req.Content, Valid: true},
 	}

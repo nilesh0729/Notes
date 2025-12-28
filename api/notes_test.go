@@ -16,7 +16,9 @@ import (
 	Database "github.com/nilesh0729/Notes/db/Result"
 
 	"github.com/nilesh0729/Notes/util"
+	"github.com/nilesh0729/Notes/tokens"
 	"github.com/stretchr/testify/require"
+	"time"
 )
 
 func TestCreateNoteApi(t *testing.T) {
@@ -30,15 +32,18 @@ func TestCreateNoteApi(t *testing.T) {
 	testcases := []struct {
 		name          string
 		body          gin.H
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker tokens.Maker)
 		buildStubs    func(store *mockDB.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
 			body: gin.H{
-				"owner":   note.Owner.String,
 				"title":   note.Title.String,
 				"content": note.Content.String,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, note.Owner.String, time.Minute)
 			},
 			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
@@ -54,8 +59,10 @@ func TestCreateNoteApi(t *testing.T) {
 		{
 			name: "BadRequest",
 			body: gin.H{
-				"title":   note.Title,
 				"content": note.Content.String,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, note.Owner.String, time.Minute)
 			},
 			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
@@ -69,9 +76,11 @@ func TestCreateNoteApi(t *testing.T) {
 		{
 			name: "InternalServerError",
 			body: gin.H{
-				"owner":   note.Owner.String,
 				"title":   note.Title.String,
 				"content": note.Content.String,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, note.Owner.String, time.Minute)
 			},
 			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
@@ -96,7 +105,7 @@ func TestCreateNoteApi(t *testing.T) {
 			store := mockDB.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := NewServer(store)
+			server, _ := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			url := "/notes"
@@ -108,6 +117,8 @@ func TestCreateNoteApi(t *testing.T) {
 
 			request, err := http.NewRequest(http.MethodPost, url, newBody)
 			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
 
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
@@ -121,12 +132,16 @@ func TestGetNotesApi(t *testing.T) {
 	testcases := []struct {
 		name          string
 		noteId        int32
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker tokens.Maker)
 		buildStubs    func(store *mockDB.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:   "OK",
 			noteId: note.NoteID,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, note.Owner.String, time.Minute)
+			},
 			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					GetNoteById(gomock.Any(), gomock.Eq(note.NoteID)).
@@ -141,6 +156,9 @@ func TestGetNotesApi(t *testing.T) {
 		{
 			name:   "BadRequest",
 			noteId: 0,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, note.Owner.String, time.Minute)
+			},
 			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					GetNoteById(gomock.Any(), gomock.Eq(note.NoteID)).
@@ -153,6 +171,9 @@ func TestGetNotesApi(t *testing.T) {
 		{
 			name:   "NotFound",
 			noteId: note.NoteID,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, note.Owner.String, time.Minute)
+			},
 			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					GetNoteById(gomock.Any(), gomock.Eq(note.NoteID)).
@@ -166,6 +187,9 @@ func TestGetNotesApi(t *testing.T) {
 		{
 			name:   "InternalServerError",
 			noteId: note.NoteID,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, note.Owner.String, time.Minute)
+			},
 			buildStubs: func(store *mockDB.MockStore) {
 				store.EXPECT().
 					GetNoteById(gomock.Any(), gomock.Eq(note.NoteID)).
@@ -189,13 +213,15 @@ func TestGetNotesApi(t *testing.T) {
 			store := mockDB.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := NewServer(store)
+			server, _ := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/notes/%d", tc.noteId)
 
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
 
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
@@ -217,6 +243,7 @@ func TestListNotes(t *testing.T) {
 	testcases := []struct {
 		name          string
 		query         Query
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker tokens.Maker)
 		buildStubs    func(store *mockDB.MockStore, query Query)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
@@ -225,6 +252,9 @@ func TestListNotes(t *testing.T) {
 			query: Query{
 				cursor:    1,
 				page_size: int32(n),
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, "user", time.Minute)
 			},
 			buildStubs: func(store *mockDB.MockStore, query Query) {
 				arg := Database.ListNotesParams{
@@ -245,8 +275,10 @@ func TestListNotes(t *testing.T) {
 		{
 			name: "BadRequest",
 			query: Query{
-				cursor:    0,
 				page_size: 3,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, "user", time.Minute)
 			},
 			buildStubs: func(store *mockDB.MockStore, query Query) {
 				arg := Database.ListNotesParams{
@@ -267,6 +299,9 @@ func TestListNotes(t *testing.T) {
 			query: Query{
 				cursor:    1,
 				page_size: int32(n),
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, "user", time.Minute)
 			},
 			buildStubs: func(store *mockDB.MockStore, query Query) {
 				arg := Database.ListNotesParams{
@@ -294,13 +329,15 @@ func TestListNotes(t *testing.T) {
 			store := mockDB.NewMockStore(ctrl)
 			tc.buildStubs(store, tc.query)
 
-			server := NewServer(store)
+			server, _ := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/notes?cursor=%d&page_size=%d", tc.query.cursor, tc.query.page_size)
 
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
 
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)

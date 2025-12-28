@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,9 +11,9 @@ import (
 )
 
 type UserResponseFormat struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
+	Username string `json:"username" binding:"required,alphanum,min=6"`
+	Password string `json:"password" binding:"required,min=8"`
+	Email    string `json:"email" binding:"required,email"`
 }
 
 func UserResponse(user Database.User) UserResponseFormat {
@@ -65,24 +66,52 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, UserResponse(user))
 }
 
-type GetUserRequest struct{
-	Username string `uri:"username" binding:"required,alphanum,min=6"`
+type LoginUserRequest struct {
+	Username string `json:"username" binding:"required,alphanum,min=6"`
+	Password string `json:"password" binding:"required,min=8"`
 }
 
-func (server *Server) Getuser(ctx *gin.Context){
-	var req GetUserRequest
+type LoginUserResponse struct{
+	AccessToken string `json:"access_token"`
+	User UserResponseFormat `json:"user"`
+}
 
-	err := ctx.BindUri(&req)
-	if err != nil{
+func (server *Server) LoginUser(ctx *gin.Context) {
+	var req LoginUserRequest
+
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errResponse(err))
 		return
 	}
-
 	user, err := server.store.GetUser(ctx, req.Username)
-	if err != nil{
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errResponse(err))
+		return
+	}
+	err = util.CheckPassword(req.Password, user.HashedPassword)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errResponse(err))
+		return
+	}
+
+	accessToken, err := server.tokenMaker.CreateToken(
+		user.Username,
+		server.config.AccessTokenDuration,
+	)
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, UserResponse(user))
+	res := LoginUserResponse{
+		AccessToken: accessToken,
+		User:        UserResponse(user),
+	}
+
+	ctx.JSON(http.StatusOK, res)
 }

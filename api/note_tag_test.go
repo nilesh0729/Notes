@@ -15,6 +15,8 @@ import (
 	mockDB "github.com/nilesh0729/Notes/db/Mock"
 
 	"github.com/stretchr/testify/require"
+	"github.com/nilesh0729/Notes/tokens"
+	"time"
 )
 
 func TestAddTagToNote(t *testing.T) {
@@ -22,6 +24,7 @@ func TestAddTagToNote(t *testing.T) {
 	testcase := []struct {
 		name          string
 		body          gin.H
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker tokens.Maker)
 		buildstubs    func(store *mockDB.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
@@ -30,6 +33,9 @@ func TestAddTagToNote(t *testing.T) {
 			body: gin.H{
 				"note_id": notetag.NoteID,
 				"tag_id":  notetag.TagID,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, "user", time.Minute)
 			},
 			buildstubs: func(store *mockDB.MockStore) {
 				arg := Database.AddTagToNoteParams(notetag)
@@ -48,6 +54,9 @@ func TestAddTagToNote(t *testing.T) {
 			body: gin.H{
 				"tag_id": notetag.TagID,
 			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, "user", time.Minute)
+			},
 			buildstubs: func(store *mockDB.MockStore) {
 				arg := Database.AddTagToNoteParams(notetag)
 				store.EXPECT().
@@ -64,6 +73,9 @@ func TestAddTagToNote(t *testing.T) {
 			body: gin.H{
 				"note_id": notetag.NoteID,
 				"tag_id":  notetag.TagID,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker tokens.Maker) {
+				addAuthorization(t, request, tokenMaker, AuthorizationTypeBearer, "user", time.Minute)
 			},
 			buildstubs: func(store *mockDB.MockStore) {
 				arg := Database.AddTagToNoteParams(notetag)
@@ -86,7 +98,7 @@ func TestAddTagToNote(t *testing.T) {
 			store := mockDB.NewMockStore(ctrl)
 			tc.buildstubs(store)
 
-			server := NewServer(store)
+			server, _ := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(tc.body)
@@ -96,6 +108,8 @@ func TestAddTagToNote(t *testing.T) {
 
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
 
 			server.router.ServeHTTP(recorder, request)
 
