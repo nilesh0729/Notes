@@ -15,6 +15,7 @@ COPY internal/db/migrate_files ./internal/db/migrate_files
 RUN apk add --no-cache curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.16.2/migrate.linux-amd64.tar.gz | tar xvz
 RUN mv migrate /usr/bin/migrate
+RUN chmod +x /app/start.sh
 
 EXPOSE 8080
 CMD [ "/app/main" ]
