@@ -2,7 +2,9 @@ package api
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	Database "github.com/nilesh0729/Notes/internal/db/Result"
 	"github.com/nilesh0729/Notes/internal/tokens"
@@ -28,6 +30,16 @@ func NewServer(config util.Config, store Database.Store) (*Server, error) {
 		tokenMaker: tokenMaker,
 	}
 	router := gin.Default()
+
+	// Configure CORS to allow requests from frontend
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, // Allow all origins, can be restricted to specific domain
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	router.POST("/user", server.CreateUser)
 	router.POST("/login", server.LoginUser)
