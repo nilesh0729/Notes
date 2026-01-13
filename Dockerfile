@@ -8,7 +8,6 @@ RUN go build -o main cmd/api/main.go
 FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/main .
-COPY .env .
 COPY start.sh .
 COPY internal/db/migrate_files ./internal/db/migrate_files
 
