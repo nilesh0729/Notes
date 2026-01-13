@@ -23,10 +23,18 @@ func LoadConfig(path string) (config Config, err error) {
 
 	viper.AutomaticEnv()
 
+	// Try to read config file, but ignore if it doesn't exist
+	// This allows the app to work with environment variables only (e.g., in cloud deployments)
 	err = viper.ReadInConfig()
-	if err!=nil{
-		return
+	if err != nil {
+		// Ignore config file not found error, continue with environment variables
+		_, ok := err.(viper.ConfigFileNotFoundError)
+		if !ok {
+			// Return only if it's a different error (not "file not found")
+			return
+		}
 	}
+	
 	err = viper.Unmarshal(&config)
 	return
 }
